@@ -3,7 +3,7 @@ name: Containerize, push to Docker registry and run on remote server
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
 
 jobs:
 
