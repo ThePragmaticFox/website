@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "bundledDependencies": [
+    "destr",
+    "unenv",
+    "ohmyfetch",
+    "h3",
+    "radix3",
+    "hookable",
+    "unstorage",
+    "pathe",
+    "scule",
+    "ufo",
+    "ohash",
+    "cookie-es",
+    "node-fetch",
+    "formdata-polyfill",
+    "fetch-blob",
+    "data-uri-to-buffer",
+    "node-domexception",
+    "web-streams-polyfill"
+  ]
+}
