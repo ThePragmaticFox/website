@@ -515,7 +515,7 @@ const htmlTemplate = (params) => `<!DOCTYPE html>
 </html>
 `;
 
-const STATIC_ASSETS_BASE = "/_nuxt/home/dogo/website/dist" + "/" + "1649589096";
+const STATIC_ASSETS_BASE = "/_nuxt/home/dogo/website/dist" + "/" + "1649596185";
 const PAYLOAD_JS = "/payload.js";
 const getClientManifest = cachedImport(() => import('./client.manifest.mjs'));
 const getSSRApp = cachedImport(() => import('./server.mjs'));

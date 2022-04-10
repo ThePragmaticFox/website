@@ -1,6 +1,6 @@
 import { hasProtocol, withBase, withQuery } from 'ufo';
 import { d as config } from '../nitro/server.mjs';
-import { v as vue_cjs_prod, r as require$$0, s as serverRenderer } from '../index.mjs';
+import { v as vue_cjs_prod, s as serverRenderer, r as require$$0 } from '../index.mjs';
 import 'unenv/runtime/polyfill/fetch.node';
 import 'http';
 import 'https';
@@ -3328,12 +3328,123 @@ const NuxtPage = vue_cjs_prod.defineComponent({
   }
 });
 const defaultPageTransition = { name: "page", mode: "out-in" };
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
+function getWidth$1() {
+  return Math.max(document.body.scrollWidth, document.documentElement.scrollWidth, document.body.offsetWidth, document.documentElement.offsetWidth, document.documentElement.clientWidth);
+}
+function getHeight$1() {
+  return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.documentElement.clientHeight);
+}
+const __default__$1 = {
+  data() {
+    return {
+      gl: void 0,
+      vertexShaderCode: `
+        #version 100
+        uniform float u_time;
+        void main() {
+          float x = sin(u_time)/5.0;
+          float y = cos(u_time)/5.0;
+          gl_Position = vec4(x, y, 0.0, 1.0);
+          gl_PointSize = 100.0;
+        }
+      `,
+      vertexShader: void 0,
+      fragmentShaderCode: `
+        #version 100
+        void main() {
+          gl_FragColor = vec4(0.88, 0.54, 0.34, 1.0);
+        }
+      `,
+      fragmentShader: void 0,
+      program: void 0,
+      buffer: void 0
+    };
+  },
+  mounted() {
+    console.log(this.$refs.canvas.clientWidth);
+    this.$refs.canvas.width = 98 / 100 * getWidth$1();
+    this.$refs.canvas.height = 98 / 100 * getHeight$1();
+    this.gl = this.$refs.canvas.getContext("webgl") || this.$refs.canvas.getContext("experimental-webgl");
+    if (!this.gl) {
+      alert("Failed to get WebGL context. Your browser or device may not support WebGL.");
+    } else {
+      this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+      this.renderLoop();
+    }
+  },
+  methods: {
+    render() {
+      this.gl.clearColor(0, 0, 0, 1);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+      this.setupVertexShader();
+      this.setupFragmentShader();
+      this.setupProgram();
+    },
+    renderLoop() {
+      this.render();
+      setInterval(this.renderLoop, 1e3 / 60);
+    },
+    setupVertexShader() {
+      this.vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+      this.gl.shaderSource(this.vertexShader, this.vertexShaderCode);
+      this.gl.compileShader(this.vertexShader);
+    },
+    setupFragmentShader() {
+      this.fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+      this.gl.shaderSource(this.fragmentShader, this.fragmentShaderCode);
+      this.gl.compileShader(this.fragmentShader);
+    },
+    setupProgram() {
+      this.program = this.gl.createProgram();
+      const millis = Date.now() - this.start;
+      this.gl.attachShader(this.program, this.vertexShader);
+      this.gl.attachShader(this.program, this.fragmentShader);
+      this.gl.linkProgram(this.program);
+      var timeLoc = this.gl.getUniformLocation(this.program, "u_time");
+      this.gl.detachShader(this.program, this.vertexShader);
+      this.gl.detachShader(this.program, this.fragmentShader);
+      this.gl.deleteShader(this.vertexShader);
+      this.gl.deleteShader(this.fragmentShader);
+      if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+        const linkErrLog = this.gl.getProgramInfoLog(this.program);
+        this.cleanup();
+        console.error("Shader program did not link successfully. Error log: " + linkErrLog);
+        return;
+      }
+      this.initializeAttributes();
+      this.gl.useProgram(this.program);
+      this.gl.uniform1f(timeLoc, millis);
+      this.gl.drawArrays(this.gl.POINTS, 0, 1);
+      this.cleanup();
+    },
+    initializeAttributes() {
+      this.gl.enableVertexAttribArray(0);
+      this.buffer = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+      this.gl.vertexAttribPointer(0, 1, this.gl.FLOAT, false, 0, 0);
+    },
+    cleanup() {
+      this.gl.useProgram(null);
+      if (this.buffer)
+        this.gl.deleteBuffer(this.buffer);
+      if (this.program)
+        this.gl.deleteProgram(this.program);
+    }
   }
-  return target;
+};
+const _sfc_main$7 = /* @__PURE__ */ Object.assign(__default__$1, {
+  __ssrInlineRender: true,
+  setup(__props) {
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(`<section${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "section" }, _attrs))}><div class="hero is-fullheight"><div class="hero-head"></div><canvas id="canvas"> Your browser does not seem to support HTML5 canvas. </canvas></div></section>`);
+    };
+  }
+});
+const _sfc_setup$7 = _sfc_main$7.setup;
+_sfc_main$7.setup = (props, ctx) => {
+  const ssrContext = vue_cjs_prod.useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/index.vue");
+  return _sfc_setup$7 ? _sfc_setup$7(props, ctx) : void 0;
 };
 const meta = void 0;
 const routes = [
@@ -3344,7 +3455,7 @@ const routes = [
     children: [],
     meta,
     component: () => Promise.resolve().then(function() {
-      return index$1;
+      return index;
     })
   }
 ];
@@ -3629,6 +3740,13 @@ const _plugins = [
   router_0ee669ae,
   nitroClient_37f93ff0
 ];
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
 const _sfc_main$6 = {
   __ssrInlineRender: true,
   props: {
@@ -3830,7 +3948,7 @@ const __nuxt_component_0 = vue_cjs_prod.defineComponent({
   }
 });
 const _sfc_main$1 = {};
-function _sfc_ssrRender$1(_ctx, _push, _parent, _attrs) {
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs) {
   const _component_NuxtLayout = __nuxt_component_0;
   const _component_NuxtPage = vue_cjs_prod.resolveComponent("NuxtPage");
   _push(serverRenderer.exports.ssrRenderComponent(_component_NuxtLayout, _attrs, {
@@ -3852,7 +3970,7 @@ _sfc_main$1.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("node_modules/nuxt3/dist/pages/runtime/app.vue");
   return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
-const AppComponent = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["ssrRender", _sfc_ssrRender$1]]);
+const AppComponent = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["ssrRender", _sfc_ssrRender]]);
 let entry;
 const plugins = normalizePlugins(_plugins);
 {
@@ -3871,20 +3989,127 @@ const plugins = normalizePlugins(_plugins);
   };
 }
 const entry$1 = (ctx) => entry(ctx);
-const _sfc_main = {};
-function _sfc_ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<div${serverRenderer.exports.ssrRenderAttrs(_attrs)}><h2 class="text-primary mt-5">list of items</h2></div>`);
+function getWidth() {
+  return Math.max(document.body.scrollWidth, document.documentElement.scrollWidth, document.body.offsetWidth, document.documentElement.offsetWidth, document.documentElement.clientWidth);
 }
+function getHeight() {
+  return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.documentElement.clientHeight);
+}
+const __default__ = {
+  data() {
+    return {
+      gl: void 0,
+      vertexShaderCode: `
+        #version 100
+        uniform float u_time;
+        void main() {
+          float x = sin(u_time)/5.0;
+          float y = cos(u_time)/5.0;
+          gl_Position = vec4(x, y, 0.0, 1.0);
+          gl_PointSize = 100.0;
+        }
+      `,
+      vertexShader: void 0,
+      fragmentShaderCode: `
+        #version 100
+        void main() {
+          gl_FragColor = vec4(0.88, 0.54, 0.34, 1.0);
+        }
+      `,
+      fragmentShader: void 0,
+      program: void 0,
+      buffer: void 0
+    };
+  },
+  mounted() {
+    console.log(this.$refs.canvas.clientWidth);
+    this.$refs.canvas.width = 98 / 100 * getWidth();
+    this.$refs.canvas.height = 98 / 100 * getHeight();
+    this.gl = this.$refs.canvas.getContext("webgl") || this.$refs.canvas.getContext("experimental-webgl");
+    if (!this.gl) {
+      alert("Failed to get WebGL context. Your browser or device may not support WebGL.");
+    } else {
+      this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
+      this.renderLoop();
+    }
+  },
+  methods: {
+    render() {
+      this.gl.clearColor(0, 0, 0, 1);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+      this.setupVertexShader();
+      this.setupFragmentShader();
+      this.setupProgram();
+    },
+    renderLoop() {
+      this.render();
+      setInterval(this.renderLoop, 1e3 / 60);
+    },
+    setupVertexShader() {
+      this.vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+      this.gl.shaderSource(this.vertexShader, this.vertexShaderCode);
+      this.gl.compileShader(this.vertexShader);
+    },
+    setupFragmentShader() {
+      this.fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+      this.gl.shaderSource(this.fragmentShader, this.fragmentShaderCode);
+      this.gl.compileShader(this.fragmentShader);
+    },
+    setupProgram() {
+      this.program = this.gl.createProgram();
+      const millis = Date.now() - this.start;
+      this.gl.attachShader(this.program, this.vertexShader);
+      this.gl.attachShader(this.program, this.fragmentShader);
+      this.gl.linkProgram(this.program);
+      var timeLoc = this.gl.getUniformLocation(this.program, "u_time");
+      this.gl.detachShader(this.program, this.vertexShader);
+      this.gl.detachShader(this.program, this.fragmentShader);
+      this.gl.deleteShader(this.vertexShader);
+      this.gl.deleteShader(this.fragmentShader);
+      if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+        const linkErrLog = this.gl.getProgramInfoLog(this.program);
+        this.cleanup();
+        console.error("Shader program did not link successfully. Error log: " + linkErrLog);
+        return;
+      }
+      this.initializeAttributes();
+      this.gl.useProgram(this.program);
+      this.gl.uniform1f(timeLoc, millis);
+      this.gl.drawArrays(this.gl.POINTS, 0, 1);
+      this.cleanup();
+    },
+    initializeAttributes() {
+      this.gl.enableVertexAttribArray(0);
+      this.buffer = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
+      this.gl.vertexAttribPointer(0, 1, this.gl.FLOAT, false, 0, 0);
+    },
+    cleanup() {
+      this.gl.useProgram(null);
+      if (this.buffer)
+        this.gl.deleteBuffer(this.buffer);
+      if (this.program)
+        this.gl.deleteProgram(this.program);
+    }
+  }
+};
+const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
+  __ssrInlineRender: true,
+  setup(__props) {
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(`<section${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "section" }, _attrs))}><div class="hero is-fullheight"><div class="hero-head"></div><canvas id="canvas"> Your browser does not seem to support HTML5 canvas. </canvas></div></section>`);
+    };
+  }
+});
 const _sfc_setup = _sfc_main.setup;
 _sfc_main.setup = (props, ctx) => {
   const ssrContext = vue_cjs_prod.useSSRContext();
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/index.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["ssrRender", _sfc_ssrRender]]);
-const index$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const index = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  "default": index
+  "default": _sfc_main
 }, Symbol.toStringTag, { value: "Module" }));
 
 export { entry$1 as default };
