@@ -1,0 +1,1 @@
+import{_ as e,c as t,o as s,a as c}from"./entry-eb14bcf1.mjs";const o={},a=c("h2",{class:"text-primary mt-5"},"list of items",-1),r=[a];function n(_,i){return s(),t("div",null,r)}var l=e(o,[["render",n]]);export{l as default};

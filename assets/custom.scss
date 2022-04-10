@@ -1,0 +1,42 @@
+/* Bootstrap theme customized with Pinegrow Web Editor */
+$primary: #2C519C;
+$secondary: #4C77CD;
+$success: #00E600;
+$info: #6D6E71;
+$warning: #EE4E56;
+$danger: #FF3300;
+$light: #f6f5f1;
+$dark: #0E2155;
+$enable-negative-margins: true;
+
+/* Breakpoints */
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1650px
+);
+
+/* Vars go before the @import */
+/* Click on the Uncomment icon in the Style panel to uncomment and customize the variables: */
+/* Import web fonts - Must come before any CSS rules. Refresh the Page view after making changes to import statements. */
+// @import url('https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700&family=Playfair+Display:wght@400;700;900&display=swap');
+// $font-family-sans-serif: 'Lato', sans-serif;
+// $headings-font-family: 'Playfair Display', serif;
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700;800&display=swap');
+
+$font-family-sans-serif: 'Open Sans', sans-serif;
+
+@import "/node_modules/bootstrap/scss/bootstrap.scss";
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css");
+
+/* Custom CSS rules come here */
+/* Pinegrow generated Additional Rules Begin */
+body,
+html {
+    min-height: 100vh;
+}
+
+/* Pinegrow generated Additional Rules End */

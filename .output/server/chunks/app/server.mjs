@@ -1,4 +1,4 @@
-import { hasProtocol, parseQuery, parseURL, withBase, withQuery } from 'ufo';
+import { hasProtocol, withBase, withQuery } from 'ufo';
 import { v as vue_cjs_prod, r as require$$0, s as serverRenderer } from '../index.mjs';
 import { u as useRuntimeConfig$1 } from '../nitro/node-server.mjs';
 import 'unenv/runtime/mock/proxy';
@@ -679,14 +679,14 @@ var vueRouter_cjs_prod = {};
   };
   const TRAILING_SLASH_RE = /\/$/;
   const removeTrailingSlash = (path) => path.replace(TRAILING_SLASH_RE, "");
-  function parseURL2(parseQuery3, location2, currentLocation = "/") {
+  function parseURL(parseQuery2, location2, currentLocation = "/") {
     let path, query = {}, searchString = "", hash = "";
     const searchPos = location2.indexOf("?");
     const hashPos = location2.indexOf("#", searchPos > -1 ? searchPos : 0);
     if (searchPos > -1) {
       path = location2.slice(0, searchPos);
       searchString = location2.slice(searchPos + 1, hashPos > -1 ? hashPos : location2.length);
-      query = parseQuery3(searchString);
+      query = parseQuery2(searchString);
     }
     if (hashPos > -1) {
       path = path || location2.slice(0, hashPos);
@@ -831,9 +831,9 @@ var vueRouter_cjs_prod = {};
     function listen(callback) {
       listeners.push(callback);
       const teardown = () => {
-        const index = listeners.indexOf(callback);
-        if (index > -1)
-          listeners.splice(index, 1);
+        const index2 = listeners.indexOf(callback);
+        if (index2 > -1)
+          listeners.splice(index2, 1);
       };
       teardowns.push(teardown);
       return teardown;
@@ -984,9 +984,9 @@ var vueRouter_cjs_prod = {};
       listen(callback) {
         listeners.push(callback);
         return () => {
-          const index = listeners.indexOf(callback);
-          if (index > -1)
-            listeners.splice(index, 1);
+          const index2 = listeners.indexOf(callback);
+          if (index2 > -1)
+            listeners.splice(index2, 1);
         };
       },
       destroy() {
@@ -1368,7 +1368,7 @@ var vueRouter_cjs_prod = {};
     }
     return matcher;
   }
-  function createRouterMatcher(routes, globalOptions) {
+  function createRouterMatcher(routes2, globalOptions) {
     const matchers = [];
     const matcherMap = /* @__PURE__ */ new Map();
     globalOptions = mergeOptions({ strict: false, end: true, sensitive: false }, globalOptions);
@@ -1435,9 +1435,9 @@ var vueRouter_cjs_prod = {};
           matcher.alias.forEach(removeRoute);
         }
       } else {
-        const index = matchers.indexOf(matcherRef);
-        if (index > -1) {
-          matchers.splice(index, 1);
+        const index2 = matchers.indexOf(matcherRef);
+        if (index2 > -1) {
+          matchers.splice(index2, 1);
           if (matcherRef.record.name)
             matcherMap.delete(matcherRef.record.name);
           matcherRef.children.forEach(removeRoute);
@@ -1502,7 +1502,7 @@ var vueRouter_cjs_prod = {};
         meta: mergeMetaFields(matched)
       };
     }
-    routes.forEach((route) => addRoute(route));
+    routes2.forEach((route) => addRoute(route));
     return { addRoute, resolve, removeRoute, getRoutes, getRecordMatcher };
   }
   function paramsFromLocation(params, keys) {
@@ -1550,7 +1550,7 @@ var vueRouter_cjs_prod = {};
     return false;
   }
   function mergeMetaFields(matched) {
-    return matched.reduce((meta, record) => assign(meta, record.meta), {});
+    return matched.reduce((meta2, record) => assign(meta2, record.meta), {});
   }
   function mergeOptions(defaults, partialOptions) {
     const options = {};
@@ -1601,7 +1601,7 @@ var vueRouter_cjs_prod = {};
     }
     return "" + text;
   }
-  function parseQuery2(search) {
+  function parseQuery(search) {
     const query = {};
     if (search === "" || search === "?")
       return query;
@@ -1770,11 +1770,11 @@ var vueRouter_cjs_prod = {};
       const currentMatched = currentRoute.matched;
       if (!routeMatched || !currentMatched.length)
         return -1;
-      const index = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched));
-      if (index > -1)
-        return index;
+      const index2 = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched));
+      if (index2 > -1)
+        return index2;
       const parentRecordPath = getOriginalPath(matched[length - 2]);
-      return length > 1 && getOriginalPath(routeMatched) === parentRecordPath && currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index;
+      return length > 1 && getOriginalPath(routeMatched) === parentRecordPath && currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index2;
     });
     const isActive = vue.computed(() => activeRecordIndex.value > -1 && includesParams(currentRoute.params, route.value.params));
     const isExactActive = vue.computed(() => activeRecordIndex.value > -1 && activeRecordIndex.value === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.value.params));
@@ -1929,7 +1929,7 @@ var vueRouter_cjs_prod = {};
   const RouterView = RouterViewImpl;
   function createRouter(options) {
     const matcher = createRouterMatcher(options.routes, options);
-    const parseQuery$1 = options.parseQuery || parseQuery2;
+    const parseQuery$1 = options.parseQuery || parseQuery;
     const stringifyQuery$1 = options.stringifyQuery || stringifyQuery;
     const routerHistory = options.history;
     const beforeGuards = useCallbacks();
@@ -1966,7 +1966,7 @@ var vueRouter_cjs_prod = {};
     function resolve(rawLocation, currentLocation) {
       currentLocation = assign({}, currentLocation || currentRoute.value);
       if (typeof rawLocation === "string") {
-        const locationNormalized = parseURL2(parseQuery$1, rawLocation, currentLocation.path);
+        const locationNormalized = parseURL(parseQuery$1, rawLocation, currentLocation.path);
         const matchedRoute2 = matcher.resolve({ path: locationNormalized.path }, currentLocation);
         const href2 = routerHistory.createHref(locationNormalized.fullPath);
         return assign(locationNormalized, matchedRoute2, {
@@ -1979,7 +1979,7 @@ var vueRouter_cjs_prod = {};
       let matcherLocation;
       if ("path" in rawLocation) {
         matcherLocation = assign({}, rawLocation, {
-          path: parseURL2(parseQuery$1, rawLocation.path, currentLocation.path).path
+          path: parseURL(parseQuery$1, rawLocation.path, currentLocation.path).path
         });
       } else {
         const targetParams = assign({}, rawLocation.params);
@@ -2011,7 +2011,7 @@ var vueRouter_cjs_prod = {};
       });
     }
     function locationAsObject(to) {
-      return typeof to === "string" ? parseURL2(parseQuery$1, to, currentRoute.value.path) : assign({}, to);
+      return typeof to === "string" ? parseURL(parseQuery$1, to, currentRoute.value.path) : assign({}, to);
     }
     function checkCanceledNavigation(to, from) {
       if (pendingLocation !== to) {
@@ -2311,7 +2311,7 @@ var vueRouter_cjs_prod = {};
   function useRouter2() {
     return vue.inject(routerKey);
   }
-  function useRoute() {
+  function useRoute2() {
     return vue.inject(routeLocationKey);
   }
   exports.RouterLink = RouterLink;
@@ -2326,13 +2326,13 @@ var vueRouter_cjs_prod = {};
   exports.matchedRouteKey = matchedRouteKey;
   exports.onBeforeRouteLeave = onBeforeRouteLeave;
   exports.onBeforeRouteUpdate = onBeforeRouteUpdate;
-  exports.parseQuery = parseQuery2;
+  exports.parseQuery = parseQuery;
   exports.routeLocationKey = routeLocationKey;
   exports.routerKey = routerKey;
   exports.routerViewLocationKey = routerViewLocationKey;
   exports.stringifyQuery = stringifyQuery;
   exports.useLink = useLink;
-  exports.useRoute = useRoute;
+  exports.useRoute = useRoute2;
   exports.useRouter = useRouter2;
   exports.viewDepthKey = viewDepthKey;
 })(vueRouter_cjs_prod);
@@ -2386,6 +2386,9 @@ function createError(input) {
 const useRouter = () => {
   var _a;
   return (_a = useNuxtApp()) == null ? void 0 : _a.$router;
+};
+const useRoute = () => {
+  return useNuxtApp()._route;
 };
 const firstNonUndefined = (...args) => args.find((arg) => arg !== void 0);
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = "noopener noreferrer";
@@ -2677,10 +2680,10 @@ function escapeHtml(string) {
   }
   let html = "";
   let escaped;
-  let index;
+  let index2;
   let lastIndex = 0;
-  for (index = match.index; index < str.length; index++) {
-    switch (str.charCodeAt(index)) {
+  for (index2 = match.index; index2 < str.length; index2++) {
+    switch (str.charCodeAt(index2)) {
       case 34:
         escaped = "&quot;";
         break;
@@ -2699,13 +2702,13 @@ function escapeHtml(string) {
       default:
         continue;
     }
-    if (lastIndex !== index) {
-      html += str.slice(lastIndex, index);
+    if (lastIndex !== index2) {
+      html += str.slice(lastIndex, index2);
     }
-    lastIndex = index + 1;
+    lastIndex = index2 + 1;
     html += escaped;
   }
-  return lastIndex !== index ? html + str.slice(lastIndex, index) : html;
+  return lastIndex !== index2 ? html + str.slice(lastIndex, index2) : html;
 }
 const commentStripRE = /^-?>|<!--|-->|--!>|<!-$/g;
 function escapeHtmlComment(src) {
@@ -2912,12 +2915,12 @@ shared_cjs_prod.toHandlerKey = toHandlerKey;
 shared_cjs_prod.toNumber = toNumber;
 shared_cjs_prod.toRawType = toRawType;
 shared_cjs_prod.toTypeString = toTypeString;
-function useHead(meta) {
-  const resolvedMeta = isFunction_1(meta) ? vue_cjs_prod.computed(meta) : meta;
+function useHead(meta2) {
+  const resolvedMeta = isFunction_1(meta2) ? vue_cjs_prod.computed(meta2) : meta2;
   useNuxtApp()._useHead(resolvedMeta);
 }
-function useMeta(meta) {
-  return useHead(meta);
+function useMeta(meta2) {
+  return useHead(meta2);
 }
 const preload = defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.mixin({
@@ -3124,18 +3127,18 @@ var createHead = () => {
           if (tag.tag === "meta" || tag.tag === "base" || tag.tag === "script") {
             const key = getTagKey(tag.props);
             if (key) {
-              let index = -1;
+              let index2 = -1;
               for (let i = 0; i < deduped.length; i++) {
                 const prev = deduped[i];
                 const prevValue = prev.props[key.name];
                 const nextValue = tag.props[key.name];
                 if (prev.tag === tag.tag && prevValue === nextValue) {
-                  index = i;
+                  index2 = i;
                   break;
                 }
               }
-              if (index !== -1) {
-                deduped.splice(index, 1);
+              if (index2 !== -1) {
+                deduped.splice(index2, 1);
               }
             }
           }
@@ -3231,8 +3234,8 @@ const vueuseHead_5d657f87 = defineNuxtPlugin((nuxtApp) => {
       head.updateDOM();
     });
   });
-  nuxtApp._useHead = (meta) => {
-    const headObj = vue_cjs_prod.ref(meta);
+  nuxtApp._useHead = (meta2) => {
+    const headObj = vue_cjs_prod.ref(meta2);
     head.addHeadObjs(headObj);
     {
       return;
@@ -3373,8 +3376,8 @@ const Meta = vue_cjs_prod.defineComponent({
     httpEquiv: String,
     name: String
   }),
-  setup: setupForUseMeta((meta) => ({
-    meta: [meta]
+  setup: setupForUseMeta((meta2) => ({
+    meta: [meta2]
   }))
 });
 const Style = vue_cjs_prod.defineComponent({
@@ -3458,111 +3461,141 @@ const plugin_e3fdb50a = defineNuxtPlugin((nuxtApp) => {
     nuxtApp.vueApp.component(name, Components[name]);
   }
 });
-function getRouteFromPath(fullPath) {
-  if (typeof fullPath === "object") {
-    throw new TypeError("[nuxt] Route location object cannot be resolved when vue-router is disabled (no pages).");
-  }
-  const url = parseURL(fullPath.toString());
-  return {
-    path: url.pathname,
-    fullPath,
-    query: parseQuery(url.search),
-    hash: url.hash,
-    params: {},
-    name: void 0,
-    matched: [],
-    redirectedFrom: void 0,
-    meta: {},
-    href: fullPath
-  };
-}
-const router_18eadc38 = defineNuxtPlugin((nuxtApp) => {
-  const routes = [];
-  const hooks = {
-    "navigate:before": [],
-    "resolve:before": [],
-    "navigate:after": [],
-    error: []
-  };
-  const registerHook = (hook, guard) => {
-    hooks[hook].push(guard);
-    return () => hooks[hook].splice(hooks[hook].indexOf(guard), 1);
-  };
-  const route = vue_cjs_prod.reactive(getRouteFromPath(nuxtApp.ssrContext.url));
-  async function handleNavigation(url, replace) {
-    try {
-      const to = getRouteFromPath(url);
-      if (false)
-        ;
-      for (const middleware of hooks["navigate:before"]) {
-        const result = await middleware(to, route);
-        if (result === false || result instanceof Error) {
-          return;
-        }
-        if (result) {
-          return handleNavigation(result, true);
-        }
-      }
-      for (const handler of hooks["resolve:before"]) {
-        await handler(to, route);
-      }
-      Object.assign(route, to);
-      if (false)
-        ;
-      for (const middleware of hooks["navigate:after"]) {
-        await middleware(to, route);
-      }
-    } catch (err) {
-      for (const handler of hooks.error) {
-        await handler(err);
-      }
-    }
-  }
-  const router = {
-    currentRoute: route,
-    isReady: () => Promise.resolve(),
-    options: {},
-    install: () => Promise.resolve(),
-    push: (url) => handleNavigation(url),
-    replace: (url) => handleNavigation(url),
-    back: () => window.history.go(-1),
-    go: (delta) => window.history.go(delta),
-    forward: () => window.history.go(1),
-    beforeResolve: (guard) => registerHook("resolve:before", guard),
-    beforeEach: (guard) => registerHook("navigate:before", guard),
-    afterEach: (guard) => registerHook("navigate:after", guard),
-    onError: (handler) => registerHook("error", handler),
-    resolve: getRouteFromPath,
-    addRoute: (parentName, route2) => {
-      routes.push(route2);
-    },
-    getRoutes: () => routes,
-    hasRoute: (name) => routes.some((route2) => route2.name === name),
-    removeRoute: (name) => {
-      const index = routes.findIndex((route2) => route2.name === name);
-      if (index !== -1) {
-        routes.splice(index, 1);
-      }
-    }
-  };
-  nuxtApp.vueApp.component("RouterLink", {
-    functional: true,
-    props: { to: String },
-    setup: (props, { slots }) => () => vue_cjs_prod.h("a", { href: props.to, onClick: (e) => {
-      e.preventDefault();
-      router.push(props.to);
-    } }, slots)
+const interpolatePath = (route, match) => {
+  return match.path.replace(/(:\w+)\([^)]+\)/g, "$1").replace(/(:\w+)[?+*]/g, "$1").replace(/:\w+/g, (r) => {
+    var _a;
+    return ((_a = route.params[r.slice(1)]) == null ? void 0 : _a.toString()) || "";
   });
-  nuxtApp._route = route;
+};
+const generateRouteKey = (override, routeProps) => {
+  var _a;
+  const matchedRoute = routeProps.route.matched.find((m) => m.components.default === routeProps.Component.type);
+  const source = (_a = override != null ? override : matchedRoute == null ? void 0 : matchedRoute.meta.key) != null ? _a : interpolatePath(routeProps.route, matchedRoute);
+  return typeof source === "function" ? source(routeProps.route) : source;
+};
+const wrapInKeepAlive = (props, children) => {
+  return { default: () => children };
+};
+const Fragment = {
+  setup(_props, { slots }) {
+    return () => slots.default();
+  }
+};
+const _wrapIf = (component, props, slots) => {
+  return { default: () => props ? vue_cjs_prod.h(component, props === true ? {} : props, slots) : vue_cjs_prod.h(Fragment, {}, slots) };
+};
+const NuxtPage = vue_cjs_prod.defineComponent({
+  name: "NuxtPage",
+  props: {
+    pageKey: {
+      type: [Function, String],
+      default: null
+    }
+  },
+  setup(props) {
+    const nuxtApp = useNuxtApp();
+    return () => {
+      return vue_cjs_prod.h(vueRouter_cjs_prod.RouterView, {}, {
+        default: (routeProps) => {
+          var _a;
+          return routeProps.Component && _wrapIf(vue_cjs_prod.Transition, (_a = routeProps.route.meta.pageTransition) != null ? _a : defaultPageTransition, wrapInKeepAlive(routeProps.route.meta.keepalive, vue_cjs_prod.h(vue_cjs_prod.Suspense, {
+            onPending: () => nuxtApp.callHook("page:start", routeProps.Component),
+            onResolve: () => nuxtApp.callHook("page:finish", routeProps.Component)
+          }, { default: () => vue_cjs_prod.h(routeProps.Component, { key: generateRouteKey(props.pageKey, routeProps) }) }))).default();
+        }
+      });
+    };
+  }
+});
+const defaultPageTransition = { name: "page", mode: "out-in" };
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
+const meta = void 0;
+const routes = [
+  {
+    name: "index",
+    path: "/",
+    file: "/home/dogo/website/pages/index.vue",
+    children: [],
+    meta,
+    component: () => Promise.resolve().then(function() {
+      return index$1;
+    })
+  }
+];
+const configRouterOptions = {};
+const routerOptions = __spreadValues({}, configRouterOptions);
+const globalMiddleware = [];
+const namedMiddleware = {};
+const router_0ee669ae = defineNuxtPlugin((nuxtApp) => {
+  nuxtApp.vueApp.component("NuxtPage", NuxtPage);
+  nuxtApp.vueApp.component("NuxtNestedPage", NuxtPage);
+  nuxtApp.vueApp.component("NuxtChild", NuxtPage);
+  const { baseURL } = useRuntimeConfig().app;
+  const routerHistory = vueRouter_cjs_prod.createMemoryHistory(baseURL);
+  const router = vueRouter_cjs_prod.createRouter(__spreadProps(__spreadValues({}, routerOptions), {
+    history: routerHistory,
+    routes
+  }));
+  nuxtApp.vueApp.use(router);
+  const previousRoute = vue_cjs_prod.shallowRef(router.currentRoute.value);
+  router.afterEach((_to, from) => {
+    previousRoute.value = from;
+  });
+  Object.defineProperty(nuxtApp.vueApp.config.globalProperties, "previousRoute", {
+    get: () => previousRoute.value
+  });
+  const route = {};
+  for (const key in router.currentRoute.value) {
+    route[key] = vue_cjs_prod.computed(() => router.currentRoute.value[key]);
+  }
+  const path = nuxtApp.ssrContext.req.url;
+  const _activeRoute = vue_cjs_prod.shallowRef(router.resolve(path));
+  const syncCurrentRoute = () => {
+    _activeRoute.value = router.currentRoute.value;
+  };
+  nuxtApp.hook("page:finish", syncCurrentRoute);
+  router.afterEach((to, from) => {
+    var _a, _b, _c, _d;
+    if (((_b = (_a = to.matched[0]) == null ? void 0 : _a.components) == null ? void 0 : _b.default) === ((_d = (_c = from.matched[0]) == null ? void 0 : _c.components) == null ? void 0 : _d.default)) {
+      syncCurrentRoute();
+    }
+  });
+  const activeRoute = {};
+  for (const key in _activeRoute.value) {
+    activeRoute[key] = vue_cjs_prod.computed(() => _activeRoute.value[key]);
+  }
+  nuxtApp._route = vue_cjs_prod.reactive(route);
+  nuxtApp._activeRoute = vue_cjs_prod.reactive(activeRoute);
   nuxtApp._middleware = nuxtApp._middleware || {
     global: [],
     named: {}
   };
   router.beforeEach(async (to, from) => {
-    to.meta = vue_cjs_prod.reactive(to.meta || {});
+    var _a;
+    to.meta = vue_cjs_prod.reactive(to.meta);
     nuxtApp._processingMiddleware = true;
-    const middlewareEntries = new Set(nuxtApp._middleware.global);
-    for (const middleware of middlewareEntries) {
+    const middlewareEntries = /* @__PURE__ */ new Set([...globalMiddleware, ...nuxtApp._middleware.global]);
+    for (const component of to.matched) {
+      const componentMiddleware = component.meta.middleware;
+      if (!componentMiddleware) {
+        continue;
+      }
+      if (Array.isArray(componentMiddleware)) {
+        for (const entry2 of componentMiddleware) {
+          middlewareEntries.add(entry2);
+        }
+      } else {
+        middlewareEntries.add(componentMiddleware);
+      }
+    }
+    for (const entry2 of middlewareEntries) {
+      const middleware = typeof entry2 === "string" ? nuxtApp._middleware.named[entry2] || await ((_a = namedMiddleware[entry2]) == null ? void 0 : _a.call(namedMiddleware).then((r) => r.default || r)) : entry2;
       const result = await callWithNuxt(nuxtApp, middleware, [to, from]);
       {
         if (result === false || result instanceof Error) {
@@ -3580,37 +3613,40 @@ const router_18eadc38 = defineNuxtPlugin((nuxtApp) => {
   router.afterEach(() => {
     delete nuxtApp._processingMiddleware;
   });
-  {
-    nuxtApp.hooks.hookOnce("app:created", async () => {
-      await router.push(nuxtApp.ssrContext.url);
-      if (route.fullPath !== nuxtApp.ssrContext.url) {
-        nuxtApp.ssrContext.res.setHeader("Location", route.fullPath);
-        nuxtApp.ssrContext.res.statusCode = 301;
-        nuxtApp.ssrContext.res.end();
+  nuxtApp.hook("app:created", async () => {
+    router.afterEach((to) => {
+      if (to.matched.length === 0) {
+        callWithNuxt(nuxtApp, throwError, [createError({
+          statusCode: 404,
+          statusMessage: `Page not found: ${to.fullPath}`
+        })]);
       }
     });
-  }
-  return {
-    provide: {
-      route,
-      router
+    {
+      router.push(nuxtApp.ssrContext.url);
+      router.afterEach((to) => {
+        if (to.fullPath !== nuxtApp.ssrContext.url) {
+          nuxtApp.ssrContext.res.setHeader("Location", to.fullPath);
+          nuxtApp.ssrContext.res.statusCode = 301;
+          nuxtApp.ssrContext.res.end();
+        }
+      });
     }
-  };
+    try {
+      await router.isReady();
+    } catch (error) {
+      callWithNuxt(nuxtApp, throwError, [error]);
+    }
+  });
+  return { provide: { router } };
 });
 const _plugins = [
   preload,
   componentsPlugin_f01b2088,
   vueuseHead_5d657f87,
   plugin_e3fdb50a,
-  router_18eadc38
+  router_0ee669ae
 ];
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
-  }
-  return target;
-};
 const _sfc_main$6 = {
   __ssrInlineRender: true,
   props: {
@@ -3792,71 +3828,49 @@ _sfc_main$2.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("node_modules/nuxt3/dist/app/components/nuxt-root.vue");
   return _sfc_setup$2 ? _sfc_setup$2(props, ctx) : void 0;
 };
-const _sfc_main$1 = {
-  __ssrInlineRender: true,
+const layouts = {};
+const defaultLayoutTransition = { name: "layout", mode: "out-in" };
+const __nuxt_component_0 = vue_cjs_prod.defineComponent({
   props: {
-    appName: {
-      type: String,
-      default: "Nuxt"
-    },
-    version: {
-      type: String,
-      default: ""
-    },
-    title: {
-      type: String,
-      default: "Welcome to Nuxt 3!"
-    },
-    readDocs: {
-      type: String,
-      default: "We highly recommend you take a look at the Nuxt documentation, whether you are new or have previous experience with the framework."
-    },
-    followTwitter: {
-      type: String,
-      default: "Follow the Nuxt Twitter account to get latest news about releases, new modules, tutorials and tips."
-    },
-    starGitHub: {
-      type: String,
-      default: "Nuxt is open source and the code is available on GitHub, feel free to star it, participate in discussions or dive into the source."
+    name: {
+      type: [String, Boolean, Object],
+      default: null
     }
   },
-  setup(__props) {
-    const props = __props;
-    useMeta({
-      title: `${props.title}`,
-      script: [],
-      style: [
-        {
-          children: `*,:before,:after{-webkit-box-sizing:border-box;box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}*{--tw-ring-inset:var(--tw-empty, );--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(14, 165, 233, .5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000}:root{-moz-tab-size:4;-o-tab-size:4;tab-size:4}a{color:inherit;text-decoration:inherit}body{margin:0;font-family:inherit;line-height:inherit}html{-webkit-text-size-adjust:100%;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";line-height:1.5}p,h4,h5{margin:0}h4,h5{font-size:inherit;font-weight:inherit}svg{display:block;vertical-align:middle}`
-        }
-      ]
-    });
-    return (_ctx, _push, _parent, _attrs) => {
-      _push(`<div${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "font-sans antialiased bg-white dark:bg-black text-black dark:text-white min-h-screen place-content-center flex flex-col items-center justify-center p-8 text-sm sm:text-base" }, _attrs))} data-v-3353e935><div class="grid grid-cols-3 gap-4 md:gap-8 max-w-5xl w-full z-20" data-v-3353e935><div class="flex justify-between items-end col-span-3" data-v-3353e935><a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="nuxt-logo" data-v-3353e935><svg viewBox="0 0 221 65" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-40 text-black dark:text-white" data-v-3353e935><g clip-path="url(#a)" data-v-3353e935><path fill="currentColor" d="M82.5623 18.5705h7.3017l15.474 24.7415V18.5705h6.741v35.0576h-7.252L89.3025 28.938v24.6901h-6.7402V18.5705ZM142.207 53.628h-6.282v-3.916c-1.429 2.7559-4.339 4.3076-8.015 4.3076-5.822 0-9.603-4.1069-9.603-10.0175V28.3847h6.282v14.3251c0 3.4558 2.146 5.8592 5.362 5.8592 3.524 0 5.974-2.7044 5.974-6.4099V28.3847h6.282V53.628ZM164.064 53.2289l-6.026-8.4144-6.027 8.4144h-6.69l9.296-13.1723-8.58-12.0709h6.843l5.158 7.2641 5.106-7.2641h6.895l-8.632 12.0709 9.295 13.1723h-6.638ZM183.469 20.7726v7.6116h7.149v5.1593h-7.149v12.5311c0 .4208.17.8245.473 1.1223.303.2978.715.4654 1.144.4661h5.532v5.9547h-4.137c-5.617 0-9.293-3.2062-9.293-8.8109V33.5484h-5.056v-5.1642h3.172c1.479 0 2.34-.8639 2.34-2.2932v-5.3184h5.825Z" data-v-3353e935></path><path fill-rule="evenodd" clip-rule="evenodd" d="M30.1185 11.5456c-1.8853-3.24168-6.5987-3.24169-8.484 0L1.08737 46.8747c-1.885324 3.2417.47133 7.2938 4.24199 7.2938H21.3695c-1.6112-1.4081-2.2079-3.8441-.9886-5.9341l15.5615-26.675-5.8239-10.0138Z" fill="#80EEC0" data-v-3353e935></path><path d="M43.1374 19.2952c1.5603-2.6523 5.461-2.6523 7.0212 0l17.0045 28.9057c1.5603 2.6522-.39 5.9676-3.5106 5.9676h-34.009c-3.1206 0-5.0709-3.3154-3.5106-5.9676l17.0045-28.9057ZM209.174 53.8005H198.483c0-1.8514.067-3.4526 0-6.0213h10.641c1.868 0 3.353.1001 4.354-.934 1-1.0341 1.501-2.3351 1.501-3.9029 0-1.8347-.667-3.2191-2.002-4.1532-1.301-.9674-2.985-1.4511-5.054-1.4511h-2.601v-5.2539h2.652c1.701 0 3.119-.4003 4.253-1.2009 1.134-.8006 1.701-1.9849 1.701-3.5527 0-1.301-.434-2.3351-1.301-3.1023-.834-.8007-2.001-1.201-3.503-1.201-1.634 0-2.918.4837-3.853 1.4511-.9.9674-1.401 2.1517-1.501 3.5527h-6.254c.133-3.2358 1.251-5.7877 3.352-7.6558 2.135-1.868 4.887-2.8021 8.256-2.8021 2.402 0 4.42.4337 6.055 1.301 1.668.834 2.919 1.9515 3.753 3.3525.867 1.4011 1.301 2.9523 1.301 4.6536 0 1.9681-.551 3.636-1.651 5.0037-1.068 1.3344-2.402 2.235-4.004 2.7021 1.969.4003 3.57 1.3677 4.804 2.9022 1.234 1.5011 1.852 3.4025 1.852 5.7043 0 1.9347-.468 3.7028-1.402 5.304-.934 1.6012-2.301 2.8855-4.103 3.8529-1.768.9674-3.953 1.4511-6.555 1.4511Z" fill="#00DC82" data-v-3353e935></path></g><defs data-v-3353e935><clipPath id="a" data-v-3353e935><path fill="#fff" d="M0 0h221v65H0z" data-v-3353e935></path></clipPath></defs></svg></a><a href="https://github.com/nuxt/framework/releases/tag/{{ version }}" target="_blank" rel="noopener" class="flex justify-end pb-1 sm:pb-2" data-v-3353e935>${__props.version}</a><div class="spotlight-wrapper" data-v-3353e935><div class="fixed z-10 left-0 right-0 spotlight" data-v-3353e935></div></div></div><div class="col-span-3 rounded p-4 flex flex-col gradient-border" data-v-3353e935><div class="flex justify-between items-center mb-4" data-v-3353e935><h4 class="font-medium text-2xl" data-v-3353e935>Get Started</h4><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" data-v-3353e935><path d="M29.4284 31.095C26.9278 33.5955 23.5364 35.0003 20.0001 35.0003C16.4637 35.0003 13.0723 33.5955 10.5717 31.095C8.07118 28.5944 6.66638 25.203 6.66638 21.6667C6.66638 18.1304 8.07118 14.7389 10.5717 12.2383C10.5717 12.2383 11.6667 15 15.0001 16.6667C15.0001 13.3333 15.8334 8.33333 19.9767 5C23.3334 8.33333 26.8167 9.62833 29.4267 12.2383C30.667 13.475 31.6506 14.9446 32.321 16.5626C32.9915 18.1806 33.3355 19.9152 33.3334 21.6667C33.3357 23.418 32.9919 25.1525 32.3218 26.7705C31.6516 28.3886 30.6683 29.8582 29.4284 31.095V31.095Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-v-3353e935></path><path d="M16.465 26.8683C17.0456 27.4491 17.7604 27.878 18.5462 28.1169C19.3319 28.3559 20.1644 28.3976 20.9701 28.2385C21.7758 28.0793 22.5299 27.7241 23.1657 27.2043C23.8015 26.6845 24.2995 26.016 24.6157 25.2581C24.9318 24.5001 25.0564 23.6759 24.9784 22.8584C24.9004 22.0408 24.6222 21.2551 24.1684 20.5705C23.7146 19.886 23.0992 19.3238 22.3766 18.9336C21.6539 18.5434 20.8463 18.3373 20.025 18.3333L18.3333 23.3333H15C15 24.6133 15.4883 25.8933 16.465 26.8683Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-v-3353e935></path></svg></div><p class="mb-2" data-v-3353e935>Remove this welcome page by removing <a class="bg-gray-100 dark:bg-white/10 rounded font-mono p-1 font-bold" data-v-3353e935>&lt;NuxtWelcome /&gt;</a> tag or creating an <a href="https://v3.nuxtjs.org/docs/directory-structure/app" target="_blank" rel="noopener" class="bg-gray-100 dark:bg-white/10 rounded font-mono p-1 font-bold" data-v-3353e935>app.vue</a> file.</p></div><a href="https://v3.nuxtjs.org" target="_blank" rel="noopener" class="gradient-border cursor-pointer col-span-3 sm:col-span-1 p-4 flex flex-col" data-v-3353e935><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" data-v-3353e935><path d="M20 10.4217C21.9467 9.12833 24.59 8.33333 27.5 8.33333C30.4117 8.33333 33.0533 9.12833 35 10.4217V32.0883C33.0533 30.795 30.4117 30 27.5 30C24.59 30 21.9467 30.795 20 32.0883M20 10.4217V32.0883V10.4217ZM20 10.4217C18.0533 9.12833 15.41 8.33333 12.5 8.33333C9.59 8.33333 6.94667 9.12833 5 10.4217V32.0883C6.94667 30.795 9.59 30 12.5 30C15.41 30 18.0533 30.795 20 32.0883V10.4217Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-v-3353e935></path><rect x="23.3334" y="13.3333" width="8.33334" height="1.66667" rx="0.833333" fill="currentColor" data-v-3353e935></rect><rect x="8.33337" y="13.3333" width="8.33333" height="1.66667" rx="0.833333" fill="currentColor" data-v-3353e935></rect><rect x="8.33337" y="18.3333" width="8.33333" height="1.66667" rx="0.833333" fill="currentColor" data-v-3353e935></rect><rect x="8.33337" y="23.3333" width="8.33333" height="1.66667" rx="0.833334" fill="currentColor" data-v-3353e935></rect><rect x="23.3334" y="18.3333" width="8.33334" height="1.66667" rx="0.833333" fill="currentColor" data-v-3353e935></rect><rect x="23.3334" y="23.3333" width="8.33334" height="1.66667" rx="0.833334" fill="currentColor" data-v-3353e935></rect></svg><h5 class="font-semibold text-xl mt-4" data-v-3353e935>Documentation</h5><p class="mt-2" data-v-3353e935>${__props.readDocs}</p></a><a href="https://github.com/nuxt/framework" target="_blank" rel="noopener" class="cursor-pointer gradient-border col-span-3 sm:col-span-1 p-4 flex flex-col" data-v-3353e935><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" data-v-3353e935><path fill-rule="evenodd" clip-rule="evenodd" d="M20 3.33333C10.795 3.33333 3.33337 10.8067 3.33337 20.0283C3.33337 27.4033 8.10837 33.6617 14.7317 35.8683C15.565 36.0217 15.8684 35.5067 15.8684 35.0633C15.8684 34.6683 15.855 33.6167 15.8467 32.225C11.21 33.2333 10.2317 29.9867 10.2317 29.9867C9.47504 28.0567 8.38171 27.5433 8.38171 27.5433C6.86837 26.51 8.49671 26.53 8.49671 26.53C10.1684 26.6467 11.0484 28.25 11.0484 28.25C12.535 30.8 14.95 30.0633 15.8984 29.6367C16.0517 28.5583 16.4817 27.8233 16.9584 27.4067C13.2584 26.985 9.36671 25.5517 9.36671 19.155C9.36671 17.3333 10.0167 15.8417 11.0817 14.675C10.91 14.2533 10.3384 12.555 11.245 10.2583C11.245 10.2583 12.645 9.80833 15.8284 11.9683C17.188 11.5975 18.5908 11.4087 20 11.4067C21.4167 11.4133 22.8417 11.5983 24.1734 11.9683C27.355 9.80833 28.7517 10.2567 28.7517 10.2567C29.6617 12.555 29.0884 14.2533 28.9184 14.675C29.985 15.8417 30.6317 17.3333 30.6317 19.155C30.6317 25.5683 26.7334 26.98 23.0217 27.3933C23.62 27.9083 24.1517 28.9267 24.1517 30.485C24.1517 32.715 24.1317 34.5167 24.1317 35.0633C24.1317 35.51 24.4317 36.03 25.2784 35.8667C28.5972 34.7535 31.4823 32.6255 33.5258 29.7834C35.5694 26.9413 36.6681 23.5289 36.6667 20.0283C36.6667 10.8067 29.2034 3.33333 20 3.33333Z" fill="currentColor" data-v-3353e935></path></svg><h5 class="font-semibold text-xl mt-4" data-v-3353e935>GitHub</h5><p class="mt-2" data-v-3353e935>${__props.starGitHub}</p></a><a href="https://twitter.com/nuxt_js" target="_blank" rel="noopener" class="cursor-pointer gradient-border col-span-3 sm:col-span-1 p-4 flex flex-col gap-y-4" data-v-3353e935><svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" data-v-3353e935><path d="M13.8167 33.7557C26.395 33.7557 33.275 23.334 33.275 14.2973C33.275 14.0007 33.275 13.7057 33.255 13.414C34.5937 12.4449 35.7489 11.245 36.6667 9.87066C35.4185 10.424 34.0943 10.7869 32.7384 10.9473C34.1661 10.0924 35.2346 8.74791 35.745 7.164C34.4029 7.96048 32.9345 8.52188 31.4034 8.824C30.3724 7.72694 29.0084 7.00039 27.5228 6.75684C26.0371 6.51329 24.5126 6.76633 23.1852 7.47678C21.8579 8.18723 20.8018 9.31545 20.1805 10.6868C19.5592 12.0581 19.4073 13.596 19.7484 15.0623C17.0294 14.9261 14.3694 14.2195 11.9411 12.9886C9.51285 11.7577 7.37059 10.0299 5.65337 7.91733C4.7789 9.42267 4.51102 11.2047 4.90427 12.9006C5.29751 14.5965 6.32232 16.0788 7.77004 17.0457C6.68214 17.0142 5.61776 16.7215 4.66671 16.1923V16.279C4.66736 17.8578 5.21403 19.3878 6.21404 20.6096C7.21404 21.8313 8.60582 22.6696 10.1534 22.9823C9.14639 23.2569 8.08986 23.2968 7.06504 23.099C7.50198 24.4581 8.35284 25.6467 9.49859 26.4984C10.6443 27.35 12.0277 27.8223 13.455 27.849C12.0369 28.9633 10.413 29.7871 8.67625 30.2732C6.93948 30.7594 5.12391 30.8984 3.33337 30.6823C6.46105 32.6896 10.1004 33.7542 13.8167 33.749" fill="currentColor" data-v-3353e935></path></svg><h5 class="font-semibold text-xl" data-v-3353e935>Twitter</h5><p data-v-3353e935>${__props.followTwitter}</p></a></div></div>`);
+  setup(props, context) {
+    const route = useRoute();
+    return () => {
+      var _a, _b, _c;
+      const layout = (_b = (_a = vue_cjs_prod.isRef(props.name) ? props.name.value : props.name) != null ? _a : route.meta.layout) != null ? _b : "default";
+      const hasLayout = layout && layout in layouts;
+      return _wrapIf(vue_cjs_prod.Transition, hasLayout && ((_c = route.meta.layoutTransition) != null ? _c : defaultLayoutTransition), _wrapIf(layouts[layout], hasLayout, context.slots)).default();
     };
   }
-};
+});
+const _sfc_main$1 = {};
+function _sfc_ssrRender$1(_ctx, _push, _parent, _attrs) {
+  const _component_NuxtLayout = __nuxt_component_0;
+  const _component_NuxtPage = vue_cjs_prod.resolveComponent("NuxtPage");
+  _push(serverRenderer.exports.ssrRenderComponent(_component_NuxtLayout, _attrs, {
+    default: vue_cjs_prod.withCtx((_, _push2, _parent2, _scopeId) => {
+      if (_push2) {
+        _push2(serverRenderer.exports.ssrRenderComponent(_component_NuxtPage, null, null, _parent2, _scopeId));
+      } else {
+        return [
+          vue_cjs_prod.createVNode(_component_NuxtPage)
+        ];
+      }
+    }),
+    _: 1
+  }, _parent));
+}
 const _sfc_setup$1 = _sfc_main$1.setup;
 _sfc_main$1.setup = (props, ctx) => {
   const ssrContext = vue_cjs_prod.useSSRContext();
-  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("node_modules/@nuxt/ui-templates/dist/templates/welcome.vue");
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("node_modules/nuxt3/dist/pages/runtime/app.vue");
   return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
-const __nuxt_component_0 = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-3353e935"]]);
-const _sfc_main = {};
-function _sfc_ssrRender(_ctx, _push, _parent, _attrs) {
-  const _component_NuxtWelcome = __nuxt_component_0;
-  _push(`<div${serverRenderer.exports.ssrRenderAttrs(_attrs)}>`);
-  _push(serverRenderer.exports.ssrRenderComponent(_component_NuxtWelcome, null, null, _parent));
-  _push(`</div>`);
-}
-const _sfc_setup = _sfc_main.setup;
-_sfc_main.setup = (props, ctx) => {
-  const ssrContext = vue_cjs_prod.useSSRContext();
-  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("app.vue");
-  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
-};
-const AppComponent = /* @__PURE__ */ _export_sfc(_sfc_main, [["ssrRender", _sfc_ssrRender]]);
+const AppComponent = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["ssrRender", _sfc_ssrRender$1]]);
 if (!globalThis.$fetch) {
   globalThis.$fetch = $fetch;
 }
@@ -3878,5 +3892,20 @@ const plugins = normalizePlugins(_plugins);
   };
 }
 const entry$1 = (ctx) => entry(ctx);
+const _sfc_main = {};
+function _sfc_ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${serverRenderer.exports.ssrRenderAttrs(_attrs)}><h2 class="text-primary mt-5">list of items</h2></div>`);
+}
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = vue_cjs_prod.useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/index.vue");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["ssrRender", _sfc_ssrRender]]);
+const index$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  "default": index
+}, Symbol.toStringTag, { value: "Module" }));
 
 export { entry$1 as default };
