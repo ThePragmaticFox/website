@@ -23,11 +23,10 @@ jobs:
           context: ./
       - run: npm i
       - run: npm run build
-      - run: echo ls
       - 
         uses: actions/upload-artifact@v3
         with:
-          name: .output
+          name: output
           path: ./.output
           
   build2:
@@ -43,7 +42,8 @@ jobs:
         -
           uses: actions/download-artifact@v3
           with:
-            name: .output
+            name: output
+        - run: echo "ls"
         -
           name: Login to Docker Hub
           uses: docker/login-action@v1
