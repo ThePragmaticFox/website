@@ -23,6 +23,7 @@ jobs:
           context: ./
       - run: npm i
       - run: npm run build
+      - run: echo ls
       - 
         uses: actions/upload-artifact@v3
         with:
