@@ -1,7 +1,7 @@
 <template>
   <section class="section">
     <div class="hero is-fullheight">
-      <div class="hero-head"></div>
+      <div>fps: <span id="fps"></span></div>
       <canvas id="canvas" ref="canvas">
         Your browser does not seem to support HTML5 canvas.
       </canvas>
@@ -9,11 +9,12 @@
   </section>
 </template>
 
-<script setup>
-const start = Date.now();
+<script setup lang="ts">
+const startTime = Date.now();
+let then_ms = 0.0;
 </script>
 
-<script>
+<script lang="ts">
 function getWidth() {
   return Math.max(
     document.body.scrollWidth,
@@ -42,8 +43,8 @@ export default {
         #version 100
         uniform float u_time;
         void main() {
-          float x = sin(u_time)/5.0;
-          float y = cos(u_time)/5.0;
+          float x = sin(0.001*u_time)/3.0;
+          float y = cos(0.001*u_time)/3.0;
           gl_Position = vec4(x, y, 0.0, 1.0);
           gl_PointSize = 100.0;
         }
@@ -84,7 +85,17 @@ export default {
     }
   },
   methods: {
-    render() {
+    renderLoop() {
+      this.render(Date.now());
+      setInterval(this.renderLoop, 1000.0/60.0);
+    },
+    render(now_ms) {
+      const then_s = this.then_ms * 0.001;
+      this.then_ms = now_ms;
+      const now_s = now_ms * 0.001;
+      const deltaTime = now_s - then_s;
+      const fps = 1.0 / deltaTime;
+      document.querySelector("#fps").textContent = fps.toFixed(1);
       // Set the WebGLRenderingContext clear color to the random color.
       this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
       // Clear the context with the newly set color.
@@ -94,10 +105,6 @@ export default {
       this.setupVertexShader();
       this.setupFragmentShader();
       this.setupProgram();
-    },
-    renderLoop() {
-      this.render();
-      setInterval(this.renderLoop, 1000 / 60);
     },
     setupVertexShader() {
       // vertex shader handles geometry
@@ -114,8 +121,7 @@ export default {
     setupProgram() {
       this.program = this.gl.createProgram();
 
-      const millis = Date.now() - this.start;
-  
+      const millis = Date.now() - this.startTime;
 
       this.gl.attachShader(this.program, this.vertexShader);
       this.gl.attachShader(this.program, this.fragmentShader);
