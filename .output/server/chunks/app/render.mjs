@@ -1,17 +1,13 @@
-import { eventHandler, useQuery } from 'h3';
-import { joinURL } from 'ufo';
-import { u as useRuntimeConfig } from '../nitro/node-server.mjs';
+import { useQuery } from 'h3';
+import { p as privateConfig, a as publicConfig, b as buildAssetsURL } from '../nitro/server.mjs';
 import 'unenv/runtime/polyfill/fetch.node';
 import 'http';
 import 'https';
 import 'destr';
 import 'ohmyfetch';
-import 'radix3';
 import 'unenv/runtime/fetch/index';
-import 'hookable';
-import 'scule';
-import 'ohash';
-import 'unstorage';
+import 'ufo';
+import 'defu';
 
 const IS_JS_RE = /\.[cm]?js(\?[^.]+)?$/;
 const IS_MODULE_RE = /\.mjs(\?[^.]+)?$/;
@@ -505,14 +501,6 @@ function stringifyString(str) {
   return result;
 }
 
-function buildAssetsURL(...path) {
-  return joinURL(publicAssetsURL(), useRuntimeConfig().app.buildAssetsDir, ...path);
-}
-function publicAssetsURL(...path) {
-  const publicBase = useRuntimeConfig().app.cdnURL || useRuntimeConfig().app.baseURL;
-  return path.length ? joinURL(publicBase, ...path) : publicBase;
-}
-
 const htmlTemplate = (params) => `<!DOCTYPE html>
 <html ${params.HTML_ATTRS}>
 
@@ -527,35 +515,31 @@ const htmlTemplate = (params) => `<!DOCTYPE html>
 </html>
 `;
 
-const STATIC_ASSETS_BASE = process.env.NUXT_STATIC_BASE + "/" + process.env.NUXT_STATIC_VERSION;
-const NUXT_NO_SSR = process.env.NUXT_NO_SSR;
+const STATIC_ASSETS_BASE = "/_nuxt/home/dogo/website/dist" + "/" + "1649589096";
 const PAYLOAD_JS = "/payload.js";
-const getClientManifest = cachedImport(() => import('../app/client.manifest.mjs'));
-const getSSRApp = !process.env.NUXT_NO_SSR && cachedImport(() => import('../app/server.mjs'));
+const getClientManifest = cachedImport(() => import('./client.manifest.mjs'));
+const getSSRApp = cachedImport(() => import('./server.mjs'));
 const getSSRRenderer = cachedResult(async () => {
-  const clientManifest = await getClientManifest();
-  if (!clientManifest) {
-    throw new Error("client.manifest is not available");
-  }
   const createSSRApp = await getSSRApp();
   if (!createSSRApp) {
     throw new Error("Server bundle is not available");
   }
-  const { renderToString: renderToString2 } = await import('../vue3.mjs');
+  const clientManifest = await getClientManifest();
+  if (!clientManifest) {
+    throw new Error("client.manifest is not available");
+  }
+  const { renderToString: renderToString2 } = await import('./vue3.mjs');
   return createRenderer(createSSRApp, { clientManifest, renderToString: renderToString2, publicPath: buildAssetsURL() }).renderToString;
 });
 const getSPARenderer = cachedResult(async () => {
   const clientManifest = await getClientManifest();
   return (ssrContext) => {
-    const config = useRuntimeConfig();
     ssrContext.nuxt = {
       serverRendered: false,
-      config: {
-        ...config.public,
-        app: config.app
-      }
+      config: publicConfig
     };
     let entryFiles = Object.values(clientManifest).filter((fileValue) => fileValue.isEntry);
+    entryFiles.push(...entryFiles.flatMap((e) => e.dynamicImports || []).map((i) => clientManifest[i]).filter(Boolean));
     if ("all" in clientManifest && "initial" in clientManifest) {
       entryFiles = clientManifest.initial.map((file) => ({ file }));
     }
@@ -571,29 +555,25 @@ const getSPARenderer = cachedResult(async () => {
   };
 });
 function renderToString(ssrContext) {
-  const getRenderer = NUXT_NO_SSR || ssrContext.noSSR ? getSPARenderer : getSSRRenderer;
+  const getRenderer = ssrContext.noSSR ? getSPARenderer : getSSRRenderer;
   return getRenderer().then((renderToString2) => renderToString2(ssrContext));
 }
-const renderer = eventHandler(async (event) => {
-  const ssrError = event.req.url?.startsWith("/__nuxt_error") ? useQuery(event) : null;
-  let url = ssrError?.url || event.req.url;
+async function renderMiddleware(req, res) {
+  const ssrError = req.url.startsWith("/__error") ? useQuery(req) : null;
+  let url = ssrError?.url || req.url;
   let isPayloadReq = false;
   if (url.startsWith(STATIC_ASSETS_BASE) && url.endsWith(PAYLOAD_JS)) {
     isPayloadReq = true;
     url = url.slice(STATIC_ASSETS_BASE.length, url.length - PAYLOAD_JS.length) || "/";
   }
-  const config = useRuntimeConfig();
   const ssrContext = {
     url,
-    event,
-    req: event.req,
-    res: event.res,
-    runtimeConfig: { private: config, public: { ...config.public, app: config.app } },
-    noSSR: event.req.headers["x-nuxt-no-ssr"],
-    error: ssrError,
-    redirected: void 0,
-    nuxt: void 0,
-    payload: void 0
+    req,
+    res,
+    runtimeConfig: { private: privateConfig, public: publicConfig },
+    noSSR: req.spa || req.headers["x-nuxt-no-ssr"],
+    ...req.context || {},
+    error: ssrError
   };
   const rendered = await renderToString(ssrContext).catch((e) => {
     if (!ssrError) {
@@ -603,30 +583,28 @@ const renderer = eventHandler(async (event) => {
   if (!rendered) {
     return;
   }
-  if (ssrContext.redirected || event.res.writableEnded) {
-    return;
-  }
   const error = ssrContext.error || ssrContext.nuxt?.error;
   if (error && !ssrError) {
     throw error;
   }
-  if (ssrContext.nuxt?.hooks) {
+  if (ssrContext.redirected || res.writableEnded) {
+    return;
+  }
+  if (ssrContext.nuxt.hooks) {
     await ssrContext.nuxt.hooks.callHook("app:rendered");
   }
   const payload = ssrContext.payload || ssrContext.nuxt;
-  if (process.env.NUXT_FULL_STATIC) {
-    payload.staticAssetsBase = STATIC_ASSETS_BASE;
-  }
   let data;
   if (isPayloadReq) {
     data = renderPayload(payload, url);
-    event.res.setHeader("Content-Type", "text/javascript;charset=UTF-8");
+    res.setHeader("Content-Type", "text/javascript;charset=UTF-8");
   } else {
     data = await renderHTML(payload, rendered, ssrContext);
-    event.res.setHeader("Content-Type", "text/html;charset=UTF-8");
+    res.setHeader("Content-Type", "text/html;charset=UTF-8");
   }
-  event.res.end(data, "utf-8");
-});
+  res.statusCode = res.statusCode || 200;
+  res.end(data, "utf-8");
+}
 async function renderHTML(payload, rendered, ssrContext) {
   const state = `<script>window.__NUXT__=${devalue(payload)}<\/script>`;
   const html = rendered.html;
@@ -672,4 +650,4 @@ function cachedResult(fn) {
   };
 }
 
-export { renderer as default };
+export { renderMiddleware };

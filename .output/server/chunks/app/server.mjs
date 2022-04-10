@@ -1,20 +1,16 @@
 import { hasProtocol, withBase, withQuery } from 'ufo';
+import { d as config } from '../nitro/server.mjs';
 import { v as vue_cjs_prod, r as require$$0, s as serverRenderer } from '../index.mjs';
-import { u as useRuntimeConfig$1 } from '../nitro/node-server.mjs';
-import 'unenv/runtime/mock/proxy';
-import 'stream';
 import 'unenv/runtime/polyfill/fetch.node';
 import 'http';
 import 'https';
 import 'destr';
 import 'h3';
 import 'ohmyfetch';
-import 'radix3';
 import 'unenv/runtime/fetch/index';
-import 'hookable';
-import 'scule';
-import 'ohash';
-import 'unstorage';
+import 'defu';
+import 'unenv/runtime/mock/proxy';
+import 'stream';
 
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
@@ -35,224 +31,7 @@ var __spreadValues = (a, b) => {
   return a;
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-useRuntimeConfig$1().app;
-const suspectProtoRx = /"(?:_|\\u005[Ff])(?:_|\\u005[Ff])(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff])(?:_|\\u005[Ff])"\s*:/;
-const suspectConstructorRx = /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/;
-const JsonSigRx = /^["{[]|^-?[0-9][0-9.]{0,14}$/;
-function jsonParseTransform(key, value) {
-  if (key === "__proto__" || key === "constructor") {
-    return;
-  }
-  return value;
-}
-function destr(val) {
-  if (typeof val !== "string") {
-    return val;
-  }
-  const _lval = val.toLowerCase();
-  if (_lval === "true") {
-    return true;
-  }
-  if (_lval === "false") {
-    return false;
-  }
-  if (_lval === "null") {
-    return null;
-  }
-  if (_lval === "nan") {
-    return NaN;
-  }
-  if (_lval === "infinity") {
-    return Infinity;
-  }
-  if (_lval === "undefined") {
-    return void 0;
-  }
-  if (!JsonSigRx.test(val)) {
-    return val;
-  }
-  try {
-    if (suspectProtoRx.test(val) || suspectConstructorRx.test(val)) {
-      return JSON.parse(val, jsonParseTransform);
-    }
-    return JSON.parse(val);
-  } catch (_e) {
-    return val;
-  }
-}
-class FetchError extends Error {
-  constructor() {
-    super(...arguments);
-    this.name = "FetchError";
-  }
-}
-function createFetchError(request, error, response) {
-  let message = "";
-  if (request && response) {
-    message = `${response.status} ${response.statusText} (${request.toString()})`;
-  }
-  if (error) {
-    message = `${error.message} (${message})`;
-  }
-  const fetchError = new FetchError(message);
-  Object.defineProperty(fetchError, "request", { get() {
-    return request;
-  } });
-  Object.defineProperty(fetchError, "response", { get() {
-    return response;
-  } });
-  Object.defineProperty(fetchError, "data", { get() {
-    return response && response._data;
-  } });
-  return fetchError;
-}
-const payloadMethods = new Set(Object.freeze(["PATCH", "POST", "PUT", "DELETE"]));
-function isPayloadMethod(method = "GET") {
-  return payloadMethods.has(method.toUpperCase());
-}
-function isJSONSerializable(val) {
-  if (val === void 0) {
-    return false;
-  }
-  const t = typeof val;
-  if (t === "string" || t === "number" || t === "boolean" || t === null) {
-    return true;
-  }
-  if (t !== "object") {
-    return false;
-  }
-  if (Array.isArray(val)) {
-    return true;
-  }
-  return val.constructor && val.constructor.name === "Object" || typeof val.toJSON === "function";
-}
-const textTypes = /* @__PURE__ */ new Set([
-  "image/svg",
-  "application/xml",
-  "application/xhtml",
-  "application/html"
-]);
-const jsonTypes = /* @__PURE__ */ new Set(["application/json", "application/ld+json"]);
-function detectResponseType(_contentType = "") {
-  if (!_contentType) {
-    return "json";
-  }
-  const contentType = _contentType.split(";").shift();
-  if (jsonTypes.has(contentType)) {
-    return "json";
-  }
-  if (textTypes.has(contentType) || contentType.startsWith("text/")) {
-    return "text";
-  }
-  return "blob";
-}
-const retryStatusCodes = /* @__PURE__ */ new Set([
-  408,
-  409,
-  425,
-  429,
-  500,
-  502,
-  503,
-  504
-]);
-function createFetch(globalOptions) {
-  const { fetch: fetch2, Headers: Headers2 } = globalOptions;
-  function onError(ctx) {
-    if (ctx.options.retry !== false) {
-      const retries = typeof ctx.options.retry === "number" ? ctx.options.retry : isPayloadMethod(ctx.options.method) ? 0 : 1;
-      const responseCode = ctx.response && ctx.response.status || 500;
-      if (retries > 0 && retryStatusCodes.has(responseCode)) {
-        return $fetchRaw(ctx.request, __spreadProps(__spreadValues({}, ctx.options), {
-          retry: retries - 1
-        }));
-      }
-    }
-    const err = createFetchError(ctx.request, ctx.error, ctx.response);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(err, $fetchRaw);
-    }
-    throw err;
-  }
-  const $fetchRaw = async function $fetchRaw2(_request, _opts = {}) {
-    const ctx = {
-      request: _request,
-      options: __spreadValues(__spreadValues({}, globalOptions.defaults), _opts),
-      response: void 0,
-      error: void 0
-    };
-    if (ctx.options.onRequest) {
-      await ctx.options.onRequest(ctx);
-    }
-    if (typeof ctx.request === "string") {
-      if (ctx.options.baseURL) {
-        ctx.request = withBase(ctx.request, ctx.options.baseURL);
-      }
-      if (ctx.options.params) {
-        ctx.request = withQuery(ctx.request, ctx.options.params);
-      }
-      if (ctx.options.body && isPayloadMethod(ctx.options.method)) {
-        if (isJSONSerializable(ctx.options.body)) {
-          ctx.options.body = JSON.stringify(ctx.options.body);
-          ctx.options.headers = new Headers2(ctx.options.headers);
-          if (!ctx.options.headers.has("content-type")) {
-            ctx.options.headers.set("content-type", "application/json");
-          }
-          if (!ctx.options.headers.has("accept")) {
-            ctx.options.headers.set("accept", "application/json");
-          }
-        }
-      }
-    }
-    ctx.response = await fetch2(ctx.request, ctx.options).catch(async (error) => {
-      ctx.error = error;
-      if (ctx.options.onRequestError) {
-        await ctx.options.onRequestError(ctx);
-      }
-      return onError(ctx);
-    });
-    const responseType = (ctx.options.parseResponse ? "json" : ctx.options.responseType) || detectResponseType(ctx.response.headers.get("content-type") || "");
-    if (responseType === "json") {
-      const data = await ctx.response.text();
-      const parseFn = ctx.options.parseResponse || destr;
-      ctx.response._data = parseFn(data);
-    } else {
-      ctx.response._data = await ctx.response[responseType]();
-    }
-    if (ctx.options.onResponse) {
-      await ctx.options.onResponse(ctx);
-    }
-    if (!ctx.response.ok) {
-      if (ctx.options.onResponseError) {
-        await ctx.options.onResponseError(ctx);
-      }
-    }
-    return ctx.response.ok ? ctx.response : onError(ctx);
-  };
-  const $fetch2 = function $fetch22(request, opts) {
-    return $fetchRaw(request, opts).then((r) => r._data);
-  };
-  $fetch2.raw = $fetchRaw;
-  $fetch2.create = (defaultOptions = {}) => createFetch(__spreadProps(__spreadValues({}, globalOptions), {
-    defaults: __spreadValues(__spreadValues({}, globalOptions.defaults), defaultOptions)
-  }));
-  return $fetch2;
-}
-const _globalThis$2 = function() {
-  if (typeof globalThis !== "undefined") {
-    return globalThis;
-  }
-  if (typeof self !== "undefined") {
-    return self;
-  }
-  if (typeof global !== "undefined") {
-    return global;
-  }
-  throw new Error("unable to locate global object");
-}();
-const fetch = _globalThis$2.fetch || (() => Promise.reject(new Error("[ohmyfetch] globalThis.fetch is not supported!")));
-const Headers = _globalThis$2.Headers;
-const $fetch = createFetch({ fetch, Headers });
+config.app;
 function flatHooks(configHooks, hooks = {}, parentName) {
   for (const key in configHooks) {
     const subHook = configHooks[key];
@@ -428,12 +207,12 @@ function createNamespace() {
     }
   };
 }
-const _globalThis$1 = typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : {};
+const _globalThis$2 = typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : {};
 const globalKey = "__unctx__";
-const defaultNamespace = _globalThis$1[globalKey] || (_globalThis$1[globalKey] = createNamespace());
+const defaultNamespace = _globalThis$2[globalKey] || (_globalThis$2[globalKey] = createNamespace());
 const getContext = (key) => defaultNamespace.get(key);
 const asyncHandlersKey = "__unctx_async_handlers__";
-const asyncHandlers = _globalThis$1[asyncHandlersKey] || (_globalThis$1[asyncHandlersKey] = /* @__PURE__ */ new Set());
+const asyncHandlers = _globalThis$2[asyncHandlersKey] || (_globalThis$2[asyncHandlersKey] = /* @__PURE__ */ new Set());
 function createMock(name, overrides = {}) {
   const fn = function() {
   };
@@ -2358,6 +2137,50 @@ const throwError = (_err) => {
   }
   return err;
 };
+const suspectProtoRx = /"(?:_|\\u005[Ff])(?:_|\\u005[Ff])(?:p|\\u0070)(?:r|\\u0072)(?:o|\\u006[Ff])(?:t|\\u0074)(?:o|\\u006[Ff])(?:_|\\u005[Ff])(?:_|\\u005[Ff])"\s*:/;
+const suspectConstructorRx = /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/;
+const JsonSigRx = /^["{[]|^-?[0-9][0-9.]{0,14}$/;
+function jsonParseTransform(key, value) {
+  if (key === "__proto__" || key === "constructor") {
+    return;
+  }
+  return value;
+}
+function destr(val) {
+  if (typeof val !== "string") {
+    return val;
+  }
+  const _lval = val.toLowerCase();
+  if (_lval === "true") {
+    return true;
+  }
+  if (_lval === "false") {
+    return false;
+  }
+  if (_lval === "null") {
+    return null;
+  }
+  if (_lval === "nan") {
+    return NaN;
+  }
+  if (_lval === "infinity") {
+    return Infinity;
+  }
+  if (_lval === "undefined") {
+    return void 0;
+  }
+  if (!JsonSigRx.test(val)) {
+    return val;
+  }
+  try {
+    if (suspectProtoRx.test(val) || suspectConstructorRx.test(val)) {
+      return JSON.parse(val, jsonParseTransform);
+    }
+    return JSON.parse(val);
+  } catch (_e) {
+    return val;
+  }
+}
 typeof setImmediate !== "undefined" ? setImmediate : (fn) => fn();
 class H3Error extends Error {
   constructor() {
@@ -2851,9 +2674,9 @@ const toNumber = (val) => {
   const n = parseFloat(val);
   return isNaN(n) ? val : n;
 };
-let _globalThis;
+let _globalThis$1;
 const getGlobalThis = () => {
-  return _globalThis || (_globalThis = typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : typeof commonjsGlobal !== "undefined" ? commonjsGlobal : {});
+  return _globalThis$1 || (_globalThis$1 = typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : typeof commonjsGlobal !== "undefined" ? commonjsGlobal : {});
 };
 shared_cjs_prod.EMPTY_ARR = EMPTY_ARR;
 shared_cjs_prod.EMPTY_OBJ = EMPTY_OBJ;
@@ -2915,12 +2738,9 @@ shared_cjs_prod.toHandlerKey = toHandlerKey;
 shared_cjs_prod.toNumber = toNumber;
 shared_cjs_prod.toRawType = toRawType;
 shared_cjs_prod.toTypeString = toTypeString;
-function useHead(meta2) {
-  const resolvedMeta = isFunction_1(meta2) ? vue_cjs_prod.computed(meta2) : meta2;
-  useNuxtApp()._useHead(resolvedMeta);
-}
 function useMeta(meta2) {
-  return useHead(meta2);
+  const resolvedMeta = isFunction_1(meta2) ? vue_cjs_prod.computed(meta2) : meta2;
+  useNuxtApp()._useMeta(resolvedMeta);
 }
 const preload = defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.mixin({
@@ -2932,7 +2752,7 @@ const preload = defineNuxtPlugin((nuxtApp) => {
   });
 });
 const components = {};
-function componentsPlugin_f01b2088(nuxtApp) {
+function components_7eefc315(nuxtApp) {
   for (const name in components) {
     nuxtApp.vueApp.component(name, components[name]);
     nuxtApp.vueApp.component("Lazy" + name, components[name]);
@@ -3226,7 +3046,7 @@ var renderHeadToString = (head) => {
     }
   };
 };
-const vueuseHead_5d657f87 = defineNuxtPlugin((nuxtApp) => {
+const vueuseHead_1e1372c2 = defineNuxtPlugin((nuxtApp) => {
   const head = createHead();
   nuxtApp.vueApp.use(head);
   nuxtApp.hooks.hookOnce("app:mounted", () => {
@@ -3234,7 +3054,7 @@ const vueuseHead_5d657f87 = defineNuxtPlugin((nuxtApp) => {
       head.updateDOM();
     });
   });
-  nuxtApp._useHead = (meta2) => {
+  nuxtApp._useMeta = (meta2) => {
     const headObj = vue_cjs_prod.ref(meta2);
     head.addHeadObjs(headObj);
     {
@@ -3247,7 +3067,7 @@ const vueuseHead_5d657f87 = defineNuxtPlugin((nuxtApp) => {
 });
 const removeUndefinedProps = (props) => Object.fromEntries(Object.entries(props).filter(([, value]) => value !== void 0));
 const setupForUseMeta = (metaFactory, renderChild) => (props, ctx) => {
-  useHead(() => metaFactory(__spreadValues(__spreadValues({}, removeUndefinedProps(props)), ctx.attrs), ctx));
+  useMeta(() => metaFactory(__spreadValues(__spreadValues({}, removeUndefinedProps(props)), ctx.attrs), ctx));
   return () => {
     var _a, _b;
     return renderChild ? (_b = (_a = ctx.slots).default) == null ? void 0 : _b.call(_a) : null;
@@ -3451,11 +3271,11 @@ const metaMixin = {
     }
     const nuxtApp = useNuxtApp();
     const source = typeof options.head === "function" ? vue_cjs_prod.computed(() => options.head(nuxtApp)) : options.head;
-    useHead(source);
+    useMeta(source);
   }
 };
-const plugin_e3fdb50a = defineNuxtPlugin((nuxtApp) => {
-  useHead(metaConfig.globalMeta);
+const plugin_2b8a2294 = defineNuxtPlugin((nuxtApp) => {
+  useMeta(metaConfig.globalMeta);
   nuxtApp.vueApp.mixin(metaMixin);
   for (const name in Components) {
     nuxtApp.vueApp.component(name, Components[name]);
@@ -3554,24 +3374,7 @@ const router_0ee669ae = defineNuxtPlugin((nuxtApp) => {
   for (const key in router.currentRoute.value) {
     route[key] = vue_cjs_prod.computed(() => router.currentRoute.value[key]);
   }
-  const path = nuxtApp.ssrContext.req.url;
-  const _activeRoute = vue_cjs_prod.shallowRef(router.resolve(path));
-  const syncCurrentRoute = () => {
-    _activeRoute.value = router.currentRoute.value;
-  };
-  nuxtApp.hook("page:finish", syncCurrentRoute);
-  router.afterEach((to, from) => {
-    var _a, _b, _c, _d;
-    if (((_b = (_a = to.matched[0]) == null ? void 0 : _a.components) == null ? void 0 : _b.default) === ((_d = (_c = from.matched[0]) == null ? void 0 : _c.components) == null ? void 0 : _d.default)) {
-      syncCurrentRoute();
-    }
-  });
-  const activeRoute = {};
-  for (const key in _activeRoute.value) {
-    activeRoute[key] = vue_cjs_prod.computed(() => _activeRoute.value[key]);
-  }
   nuxtApp._route = vue_cjs_prod.reactive(route);
-  nuxtApp._activeRoute = vue_cjs_prod.reactive(activeRoute);
   nuxtApp._middleware = nuxtApp._middleware || {
     global: [],
     named: {}
@@ -3640,12 +3443,191 @@ const router_0ee669ae = defineNuxtPlugin((nuxtApp) => {
   });
   return { provide: { router } };
 });
+class FetchError extends Error {
+  constructor() {
+    super(...arguments);
+    this.name = "FetchError";
+  }
+}
+function createFetchError(request, error, response) {
+  let message = "";
+  if (request && response) {
+    message = `${response.status} ${response.statusText} (${request.toString()})`;
+  }
+  if (error) {
+    message = `${error.message} (${message})`;
+  }
+  const fetchError = new FetchError(message);
+  Object.defineProperty(fetchError, "request", { get() {
+    return request;
+  } });
+  Object.defineProperty(fetchError, "response", { get() {
+    return response;
+  } });
+  Object.defineProperty(fetchError, "data", { get() {
+    return response && response._data;
+  } });
+  return fetchError;
+}
+const payloadMethods = new Set(Object.freeze(["PATCH", "POST", "PUT", "DELETE"]));
+function isPayloadMethod(method = "GET") {
+  return payloadMethods.has(method.toUpperCase());
+}
+function isJSONSerializable(val) {
+  if (val === void 0) {
+    return false;
+  }
+  const t = typeof val;
+  if (t === "string" || t === "number" || t === "boolean" || t === null) {
+    return true;
+  }
+  if (t !== "object") {
+    return false;
+  }
+  if (Array.isArray(val)) {
+    return true;
+  }
+  return val.constructor && val.constructor.name === "Object" || typeof val.toJSON === "function";
+}
+const textTypes = /* @__PURE__ */ new Set([
+  "image/svg",
+  "application/xml",
+  "application/xhtml",
+  "application/html"
+]);
+const jsonTypes = /* @__PURE__ */ new Set(["application/json", "application/ld+json"]);
+function detectResponseType(_contentType = "") {
+  if (!_contentType) {
+    return "json";
+  }
+  const contentType = _contentType.split(";").shift();
+  if (jsonTypes.has(contentType)) {
+    return "json";
+  }
+  if (textTypes.has(contentType) || contentType.startsWith("text/")) {
+    return "text";
+  }
+  return "blob";
+}
+const retryStatusCodes = /* @__PURE__ */ new Set([
+  408,
+  409,
+  425,
+  429,
+  500,
+  502,
+  503,
+  504
+]);
+function createFetch(globalOptions) {
+  const { fetch: fetch2, Headers: Headers2 } = globalOptions;
+  function onError(ctx) {
+    if (ctx.options.retry !== false) {
+      const retries = typeof ctx.options.retry === "number" ? ctx.options.retry : isPayloadMethod(ctx.options.method) ? 0 : 1;
+      const responseCode = ctx.response && ctx.response.status || 500;
+      if (retries > 0 && retryStatusCodes.has(responseCode)) {
+        return $fetchRaw(ctx.request, __spreadProps(__spreadValues({}, ctx.options), {
+          retry: retries - 1
+        }));
+      }
+    }
+    const err = createFetchError(ctx.request, ctx.error, ctx.response);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(err, $fetchRaw);
+    }
+    throw err;
+  }
+  const $fetchRaw = async function $fetchRaw2(_request, _opts = {}) {
+    const ctx = {
+      request: _request,
+      options: __spreadValues(__spreadValues({}, globalOptions.defaults), _opts),
+      response: void 0,
+      error: void 0
+    };
+    if (ctx.options.onRequest) {
+      await ctx.options.onRequest(ctx);
+    }
+    if (typeof ctx.request === "string") {
+      if (ctx.options.baseURL) {
+        ctx.request = withBase(ctx.request, ctx.options.baseURL);
+      }
+      if (ctx.options.params) {
+        ctx.request = withQuery(ctx.request, ctx.options.params);
+      }
+      if (ctx.options.body && isPayloadMethod(ctx.options.method)) {
+        if (isJSONSerializable(ctx.options.body)) {
+          ctx.options.body = JSON.stringify(ctx.options.body);
+          ctx.options.headers = new Headers2(ctx.options.headers);
+          if (!ctx.options.headers.has("content-type")) {
+            ctx.options.headers.set("content-type", "application/json");
+          }
+          if (!ctx.options.headers.has("accept")) {
+            ctx.options.headers.set("accept", "application/json");
+          }
+        }
+      }
+    }
+    ctx.response = await fetch2(ctx.request, ctx.options).catch(async (error) => {
+      ctx.error = error;
+      if (ctx.options.onRequestError) {
+        await ctx.options.onRequestError(ctx);
+      }
+      return onError(ctx);
+    });
+    const responseType = (ctx.options.parseResponse ? "json" : ctx.options.responseType) || detectResponseType(ctx.response.headers.get("content-type") || "");
+    if (responseType === "json") {
+      const data = await ctx.response.text();
+      const parseFn = ctx.options.parseResponse || destr;
+      ctx.response._data = parseFn(data);
+    } else {
+      ctx.response._data = await ctx.response[responseType]();
+    }
+    if (ctx.options.onResponse) {
+      await ctx.options.onResponse(ctx);
+    }
+    if (!ctx.response.ok) {
+      if (ctx.options.onResponseError) {
+        await ctx.options.onResponseError(ctx);
+      }
+    }
+    return ctx.response.ok ? ctx.response : onError(ctx);
+  };
+  const $fetch2 = function $fetch22(request, opts) {
+    return $fetchRaw(request, opts).then((r) => r._data);
+  };
+  $fetch2.raw = $fetchRaw;
+  $fetch2.create = (defaultOptions = {}) => createFetch(__spreadProps(__spreadValues({}, globalOptions), {
+    defaults: __spreadValues(__spreadValues({}, globalOptions.defaults), defaultOptions)
+  }));
+  return $fetch2;
+}
+const _globalThis = function() {
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  if (typeof self !== "undefined") {
+    return self;
+  }
+  if (typeof global !== "undefined") {
+    return global;
+  }
+  throw new Error("unable to locate global object");
+}();
+const fetch = _globalThis.fetch || (() => Promise.reject(new Error("[ohmyfetch] global.fetch is not supported!")));
+const Headers = _globalThis.Headers;
+const $fetch = createFetch({ fetch, Headers });
+if (!globalThis.$fetch) {
+  globalThis.$fetch = $fetch;
+}
+const nitroClient_37f93ff0 = () => {
+};
 const _plugins = [
   preload,
-  componentsPlugin_f01b2088,
-  vueuseHead_5d657f87,
-  plugin_e3fdb50a,
-  router_0ee669ae
+  components_7eefc315,
+  vueuseHead_1e1372c2,
+  plugin_2b8a2294,
+  router_0ee669ae,
+  nitroClient_37f93ff0
 ];
 const _sfc_main$6 = {
   __ssrInlineRender: true,
@@ -3871,9 +3853,6 @@ _sfc_main$1.setup = (props, ctx) => {
   return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
 const AppComponent = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["ssrRender", _sfc_ssrRender$1]]);
-if (!globalThis.$fetch) {
-  globalThis.$fetch = $fetch;
-}
 let entry;
 const plugins = normalizePlugins(_plugins);
 {

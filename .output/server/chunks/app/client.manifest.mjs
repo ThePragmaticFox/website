@@ -1,6 +1,6 @@
 const client_manifest = {
   "node_modules/nuxt3/dist/app/entry.mjs": {
-    "file": "entry-eb14bcf1.mjs",
+    "file": "entry-81aad56e.mjs",
     "src": "node_modules/nuxt3/dist/app/entry.mjs",
     "isEntry": true,
     "dynamicImports": [
@@ -11,7 +11,7 @@ const client_manifest = {
     ]
   },
   "pages/index.vue": {
-    "file": "index-9a3a0b43.mjs",
+    "file": "index-705b0e81.mjs",
     "src": "pages/index.vue",
     "isDynamicEntry": true,
     "imports": [

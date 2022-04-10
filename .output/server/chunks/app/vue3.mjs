@@ -1,4 +1,4 @@
-import { s as serverRenderer } from './index.mjs';
+import { s as serverRenderer } from '../index.mjs';
 import 'unenv/runtime/mock/proxy';
 import 'stream';
 

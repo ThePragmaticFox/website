@@ -1,51 +1,48 @@
-import { eventHandler, createError } from 'h3';
+import { createError } from 'h3';
 import { withLeadingSlash, withoutTrailingSlash, parseURL } from 'ufo';
 import { promises } from 'fs';
 import { resolve, dirname } from 'pathe';
 import { fileURLToPath } from 'url';
+import { c as buildAssetsDir } from './server.mjs';
+import 'unenv/runtime/polyfill/fetch.node';
+import 'http';
+import 'https';
+import 'destr';
+import 'ohmyfetch';
+import 'unenv/runtime/fetch/index';
+import 'defu';
 
 const assets = {
-  "/_nuxt/entry-eb14bcf1.mjs": {
+  "/_nuxt/entry-81aad56e.mjs": {
     "type": "application/javascript",
-    "etag": "\"1d93a-3ZB+zMShSHZh+FCr86fdC3mDGWQ\"",
-    "mtime": "2022-04-10T10:35:02.661Z",
-    "path": "../public/_nuxt/entry-eb14bcf1.mjs"
+    "etag": "\"1d559-izKSmyCXEjNoSTnDKZXefAwR65Q\"",
+    "mtime": "2022-04-10T11:11:38.461Z",
+    "path": "../public/_nuxt/entry-81aad56e.mjs"
   },
   "/_nuxt/entry.d8a37e10.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"1efa-KHW5rth1wEyi7E+r93ENbKTqUwk\"",
-    "mtime": "2022-04-10T10:35:02.661Z",
+    "mtime": "2022-04-10T11:11:38.461Z",
     "path": "../public/_nuxt/entry.d8a37e10.css"
   },
-  "/_nuxt/index-9a3a0b43.mjs": {
+  "/_nuxt/index-705b0e81.mjs": {
     "type": "application/javascript",
-    "etag": "\"e3-MxLKpNoAIfPDCg2Moqt2GYm6GiA\"",
-    "mtime": "2022-04-10T10:35:02.661Z",
-    "path": "../public/_nuxt/index-9a3a0b43.mjs"
+    "etag": "\"e3-NVGdRKFOaV9+OxAzYbpBGfWC4Tg\"",
+    "mtime": "2022-04-10T11:11:38.461Z",
+    "path": "../public/_nuxt/index-705b0e81.mjs"
   },
   "/_nuxt/manifest.json": {
     "type": "application/json",
-    "etag": "\"1c1-n5XxkS6zBO8PuwnlTeYlcAgsF78\"",
-    "mtime": "2022-04-10T10:35:02.661Z",
+    "etag": "\"1c1-g09PPYhUwgR/m2w3tYQlZkP4qVo\"",
+    "mtime": "2022-04-10T11:11:38.461Z",
     "path": "../public/_nuxt/manifest.json"
   }
 };
 
 const mainDir = dirname(fileURLToPath(globalThis.entryURL));
+
 function readAsset (id) {
-  return promises.readFile(resolve(mainDir, assets[id].path)).catch(() => {})
-}
-
-const publicAssetBases = ["/_nuxt"];
-
-function isPublicAssetURL(id = '') {
-  if (assets[id]) {
-    return
-  }
-  for (const base of publicAssetBases) {
-    if (id.startsWith(base)) { return true }
-  }
-  return false
+  return promises.readFile(resolve(mainDir, getAsset(id).path))
 }
 
 function getAsset (id) {
@@ -53,11 +50,13 @@ function getAsset (id) {
 }
 
 const METHODS = ["HEAD", "GET"];
-const _static = eventHandler(async (event) => {
-  if (event.req.method && !METHODS.includes(event.req.method)) {
+const TWO_DAYS = 2 * 60 * 60 * 24;
+const STATIC_ASSETS_BASE = "/_nuxt/home/dogo/website/dist" + "/" + "1649589096";
+async function serveStatic(req, res) {
+  if (!METHODS.includes(req.method)) {
     return;
   }
-  let id = decodeURIComponent(withLeadingSlash(withoutTrailingSlash(parseURL(event.req.url).pathname)));
+  let id = decodeURIComponent(withLeadingSlash(withoutTrailingSlash(parseURL(req.url).pathname)));
   let asset;
   for (const _id of [id, id + "/index.html"]) {
     const _asset = getAsset(_id);
@@ -67,8 +66,9 @@ const _static = eventHandler(async (event) => {
       break;
     }
   }
+  const isBuildAsset = id.startsWith(buildAssetsDir());
   if (!asset) {
-    if (isPublicAssetURL(id)) {
+    if (isBuildAsset && !id.startsWith(STATIC_ASSETS_BASE)) {
       throw createError({
         statusMessage: "Cannot find static asset " + id,
         statusCode: 404
@@ -76,31 +76,32 @@ const _static = eventHandler(async (event) => {
     }
     return;
   }
-  const ifNotMatch = event.req.headers["if-none-match"] === asset.etag;
+  const ifNotMatch = req.headers["if-none-match"] === asset.etag;
   if (ifNotMatch) {
-    event.res.statusCode = 304;
-    event.res.end("Not Modified (etag)");
-    return;
+    res.statusCode = 304;
+    return res.end("Not Modified (etag)");
   }
-  const ifModifiedSinceH = event.req.headers["if-modified-since"];
+  const ifModifiedSinceH = req.headers["if-modified-since"];
   if (ifModifiedSinceH && asset.mtime) {
     if (new Date(ifModifiedSinceH) >= new Date(asset.mtime)) {
-      event.res.statusCode = 304;
-      event.res.end("Not Modified (mtime)");
-      return;
+      res.statusCode = 304;
+      return res.end("Not Modified (mtime)");
     }
   }
   if (asset.type) {
-    event.res.setHeader("Content-Type", asset.type);
+    res.setHeader("Content-Type", asset.type);
   }
   if (asset.etag) {
-    event.res.setHeader("ETag", asset.etag);
+    res.setHeader("ETag", asset.etag);
   }
   if (asset.mtime) {
-    event.res.setHeader("Last-Modified", asset.mtime);
+    res.setHeader("Last-Modified", asset.mtime);
+  }
+  if (isBuildAsset) {
+    res.setHeader("Cache-Control", `max-age=${TWO_DAYS}, immutable`);
   }
   const contents = await readAsset(id);
-  event.res.end(contents);
-});
+  return res.end(contents);
+}
 
-export { _static as default };
+export { serveStatic as default };
