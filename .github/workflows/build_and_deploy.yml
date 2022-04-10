@@ -23,12 +23,11 @@ jobs:
           context: ./
       - run: npm i
       - run: npm run build
-      - run: echo ls
       - 
         uses: actions/upload-artifact@v3
         with:
-          name: .output
-          path: ./.output
+          name: output
+          path: .output
           
   build2:
   
@@ -43,7 +42,8 @@ jobs:
         -
           uses: actions/download-artifact@v3
           with:
-            name: .output
+            name: output
+            path: .output
         -
           name: Login to Docker Hub
           uses: docker/login-action@v1
@@ -53,6 +53,7 @@ jobs:
         -
           name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v1
+        - run: ls
         -
           name: Build and push
           uses: docker/build-push-action@v2
