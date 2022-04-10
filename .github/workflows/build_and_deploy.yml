@@ -21,9 +21,8 @@ jobs:
         with:
           node-version: '16.14.2'
           context: ./
-      - run: 
-          npm i
-          npm run build
+      - run: npm i
+      - run: npm run build
       - 
         uses: actions/upload-artifact@v3
         with:
