@@ -1,4 +1,14 @@
-FROM node:17-alpine3.15
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get -y install build-essential
+RUN apt-get -y install curl
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
+RUN apt-get -y install nodejs
+
+ENV DEBIAN_FRONTEND=dialog
 
 RUN mkdir -p /website
 WORKDIR /website
