@@ -35,22 +35,33 @@ function getSourceSynch(url) {
 };
 
 function resizeCanvasToDisplaySize(ctx) {
-    const width = ctx.gl.canvas.clientWidth;
-    const height = ctx.gl.canvas.clientHeight;
-    if (ctx.gl.canvas.width != width ||
-        ctx.gl.canvas.height != height) {
-        ctx.gl.canvas.width = width;
-        ctx.gl.canvas.height = height;
-    }
+    ctx.gl.canvas.width = ctx.gl.canvas.clientWidth;
+    ctx.gl.canvas.height = ctx.gl.canvas.clientHeight;
 }
+
+function getVertices(vertices, vSize) {
+    if (vertices.length != 0) {
+        return vertices;
+    }
+    const vSizeF = parseFloat(vSize);
+    const delta = 1.0 / vSizeF;
+    for (let i = 0; i < vSize; i++) {
+        let sign = 1.0;
+        if (i % 2 == 1) {
+            sign = -1.0;
+        }
+        vertices.push(delta * i);
+        vertices.push(delta * i);
+        vertices.push(sign);
+    }
+    return vertices;
+} 
 
 export function render(ctx) {
 
-    const vertices = [
-        1.0, 1.0, 1.0,
-        2.0, 2.0, -1.0,
-        3.0, 3.0, 1.0,
-    ];
+    var vertices = [];
+    const vSize = 100000;
+    vertices = getVertices(vertices, vSize);
 
     udpateDelta(ctx);
     resizeCanvasToDisplaySize(ctx);
@@ -77,6 +88,7 @@ export function render(ctx) {
     ctx.gl.linkProgram(ctx.program);
 
     const timeLoc = ctx.gl.getUniformLocation(ctx.program, 'u_time');
+    const deltaLoc = ctx.gl.getUniformLocation(ctx.program, 'u_delta');
     const cameraMatrixLoc = ctx.gl.getUniformLocation(ctx.program, 'u_camera');
 
     ctx.gl.detachShader(ctx.program, ctx.vertexShader);
@@ -94,14 +106,14 @@ export function render(ctx) {
         return;
     }
 
-    const translation = [0.0, 0.0, -10.0];
+    const translation = [0.0, 0.0, -20.0];
     const rotation = [0.0, 0.0, 0.0];
     const scale = [1.0, 1.0, 1.0];
 
-    const fovDeg = 25.0;
+    const fovDeg = 6.0;
     const aspect = ctx.gl.canvas.clientWidth / ctx.gl.canvas.clientHeight;
     const near = 1.0;
-    const far = 100.0;
+    const far = 1000.0;
     var perspective = M4.getPerspectiveDeg(fovDeg, aspect, near, far);
     perspective = M4.translate(perspective, translation[0], translation[1], translation[2]);
     perspective = M4.rotateXDeg(perspective, rotation[0]);
@@ -125,13 +137,14 @@ export function render(ctx) {
     ctx.gl.useProgram(ctx.program);
 
     ctx.gl.uniform1f(timeLoc, ctx.now_ms);
+    ctx.gl.uniform1f(deltaLoc, ctx.deltaMean);
     ctx.gl.uniformMatrix4fv(cameraMatrixLoc, false, perspective);
 
     // Bind vertex buffer object
     ctx.gl.bindBuffer(ctx.gl.ARRAY_BUFFER, vertex_buffer);
 
     // Get the attribute location
-    const coord = ctx.gl.getAttribLocation(ctx.program, "coordinates");
+    const coord = ctx.gl.getAttribLocation(ctx.program, "vertex_coord");
 
     // Point an attribute to the currently bound VBO
     ctx.gl.vertexAttribPointer(coord, 3, ctx.gl.FLOAT, false, 0, 0);
@@ -154,7 +167,7 @@ export function render(ctx) {
     ctx.gl.viewport(0, 0, ctx.gl.drawingBufferWidth, ctx.gl.drawingBufferHeight);
 
     // Draw the triangle
-    ctx.gl.drawArrays(ctx.gl.POINTS, 0, 3);
+    ctx.gl.drawArrays(ctx.gl.POINTS, 0, vSize);
 
     ctx.gl.useProgram(null);
     if (ctx.buffer) {
