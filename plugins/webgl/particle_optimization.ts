@@ -89,7 +89,7 @@ export function render_particle_optimization(ctx) {
     const rotation = [0.0, 0.0, 0.0];
     const scale = [1.0, 1.0, 1.0];
 
-    const fovDeg = 6.0;
+    const fovDeg = 10.0;
     const aspect = ctx.gl.canvas.clientWidth / ctx.gl.canvas.clientHeight;
     const near = 1.0;
     const far = 1000.0;
