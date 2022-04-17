@@ -13,20 +13,22 @@ float rand(vec2 p) {
 }
 
 void main() {
-    //float sin_in = mod(vertex_coord.z * 0.005 * u_time, 2.0 * pi);
-    //float cos_in = mod(vertex_coord.z * 0.005 * u_time, 2.0 * pi);
-    float x = vertex_coord.y * sin(vertex_coord.y * vertex_coord.z * 0.005 * u_time);
-    float y = vertex_coord.x * cos(vertex_coord.x * vertex_coord.z * 0.005 *
-    u_time);
+    float x = 0.0;
+    float y = 0.0;
     float z = 0.0;
-    if (-0.01 < x && x < 0.01 && -0.01 < y && y < 0.01) {
-        z = 1000000.0;
-    }
-    gl_Position = u_camera * vec4(x, y, z, 1.0);
-    gl_PointSize = 3.0;
-    if (vertex_coord.z < 0.0) {
+    if(vertex_coord.z < 0.0) {
+        x = vertex_coord.x * cos(1000.0 * vertex_coord.x);
+        y = vertex_coord.y * sin(1000.0 * vertex_coord.y);
+        z = 100.0 * (vertex_coord.x * vertex_coord.x + vertex_coord.y *
+            vertex_coord.y) * cos(0.001 * u_time * vertex_coord.y * vertex_coord.x);
         color = vec4(0.79, 0.15, 0.15, 1);
     } else {
+        x = vertex_coord.x * sin(1000.0 * vertex_coord.x);
+        y = vertex_coord.y * cos(1000.0 * vertex_coord.y);
+        z = 100.0 * (vertex_coord.x * vertex_coord.x + vertex_coord.y *
+            vertex_coord.y) * sin(0.001 * u_time * vertex_coord.y * vertex_coord.x);
         color = vec4(0.07, 0.15, 0.88, 1);
     }
+    gl_PointSize = 2.0;
+    gl_Position = u_camera * vec4(x, y, z, 1.0);
 }
