@@ -1,5 +1,9 @@
 import * as M4 from "./m4.js"
 
+const vSize = 3*500000;
+const vertices = new Float32Array(vSize);
+var hasBeenFilled = false;
+
 function getDelta(ctx) {
     const time = Date.now();
     const next_ms = time - ctx.timeAnchor_ms;
@@ -39,29 +43,30 @@ function resizeCanvasToDisplaySize(ctx) {
     ctx.gl.canvas.height = ctx.gl.canvas.clientHeight;
 }
 
-function getVertices(vertices, vSize) {
-    if (vertices.length != 0) {
+function fillVertices() {
+    if (hasBeenFilled) {
         return vertices;
     }
-    const vSizeF = parseFloat(vSize);
-    const delta = 1.0 / vSizeF;
-    for (let i = 0; i < vSize; i++) {
+    const { $showToast } = useNuxtApp();
+    $showToast("test", "info", 5000);
+    hasBeenFilled = true;
+    const vSizeFixed = vSize/3;
+    const delta = 1.0 / vSizeFixed;
+    for (let i = 0; i < vSizeFixed; i++) {
         let sign = 1.0;
         if (i % 2 == 1) {
             sign = -1.0;
         }
-        vertices.push(delta * i);
-        vertices.push(delta * i);
-        vertices.push(sign);
+        vertices[3*i + 0] = (delta * i);
+        vertices[3*i + 1] = (delta * i);
+        vertices[3*i + 2] = (sign);
     }
     return vertices;
 } 
 
 export function render(ctx) {
 
-    var vertices = [];
-    const vSize = 100000;
-    vertices = getVertices(vertices, vSize);
+    fillVertices();
 
     udpateDelta(ctx);
     resizeCanvasToDisplaySize(ctx);
@@ -128,7 +133,7 @@ export function render(ctx) {
     ctx.gl.bindBuffer(ctx.gl.ARRAY_BUFFER, vertex_buffer);
 
     // Pass the vertex data to the buffer
-    ctx.gl.bufferData(ctx.gl.ARRAY_BUFFER, new Float32Array(vertices), ctx.gl.STATIC_DRAW);
+    ctx.gl.bufferData(ctx.gl.ARRAY_BUFFER, vertices, ctx.gl.STATIC_DRAW);
 
     // Unbind the buffer
     ctx.gl.bindBuffer(ctx.gl.ARRAY_BUFFER, null);

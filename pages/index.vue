@@ -29,6 +29,9 @@ export default {
         deltaMean: 1.0,
         deltaArr: [],
         deltaSize: 1000,
+        verticesArr: [],
+        verticesSize: 100000,
+        isVerticesArrInitiated: false
       },
     };
   },
