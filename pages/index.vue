@@ -1,8 +1,8 @@
 <template>
 <div>
-  <a href="/test">test</a>
+  <a href="/particle_optimization">Particle Optimization</a>
   <br><br><br><br>
-  <a href="/game_of_life">game of life</a>
+  <a href="/game_of_life">Game of Life</a>
   </div>
 </template>
 

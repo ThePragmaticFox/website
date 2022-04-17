@@ -1,9 +1,5 @@
 import * as M4 from "./m4.js"
 
-const vSize = 3*500000;
-const vertices = new Float32Array(vSize);
-var hasBeenFilled = false;
-
 function getDelta(ctx) {
     const time = Date.now();
     const next_ms = time - ctx.timeAnchor_ms;
@@ -43,39 +39,17 @@ function resizeCanvasToDisplaySize(ctx) {
     ctx.gl.canvas.height = ctx.gl.canvas.clientHeight;
 }
 
-function fillVertices() {
-    if (hasBeenFilled) {
-        return vertices;
-    }
-    const { $showToast } = useNuxtApp();
-    $showToast("test", "info", 5000);
-    hasBeenFilled = true;
-    const vSizeFixed = vSize/3;
-    const delta = 1.0 / vSizeFixed;
-    for (let i = 0; i < vSizeFixed; i++) {
-        let sign = 1.0;
-        if (i % 2 == 1) {
-            sign = -1.0;
-        }
-        vertices[3*i + 0] = (delta * i);
-        vertices[3*i + 1] = (delta * i);
-        vertices[3*i + 2] = (sign);
-    }
-    return vertices;
-} 
+export function render_particle_optimization(ctx) {
 
-export function render(ctx) {
-
-    fillVertices();
-
+    fillVertices(ctx);
     udpateDelta(ctx);
     resizeCanvasToDisplaySize(ctx);
 
     if (ctx.vertexShaderSrc == null) {
-        ctx.vertexShaderSrc = getSourceSynch("/shaders/shader_1.vert");
+        ctx.vertexShaderSrc = getSourceSynch("/shaders/particle_optimization.vert");
     }
     if (ctx.fragmentShaderSrc == null) {
-        ctx.fragmentShaderSrc = getSourceSynch("/shaders/shader_1.frag");
+        ctx.fragmentShaderSrc = getSourceSynch("/shaders/particle_optimization.frag");
     }
 
     ctx.program = ctx.gl.createProgram();
@@ -133,10 +107,7 @@ export function render(ctx) {
     ctx.gl.bindBuffer(ctx.gl.ARRAY_BUFFER, vertex_buffer);
 
     // Pass the vertex data to the buffer
-    ctx.gl.bufferData(ctx.gl.ARRAY_BUFFER, vertices, ctx.gl.STATIC_DRAW);
-
-    // Unbind the buffer
-    ctx.gl.bindBuffer(ctx.gl.ARRAY_BUFFER, null);
+    ctx.gl.bufferData(ctx.gl.ARRAY_BUFFER, ctx.vertices, ctx.gl.STATIC_DRAW);
 
     // Use the combined shader program object
     ctx.gl.useProgram(ctx.program);
@@ -144,9 +115,6 @@ export function render(ctx) {
     ctx.gl.uniform1f(timeLoc, ctx.now_ms);
     ctx.gl.uniform1f(deltaLoc, ctx.deltaMean);
     ctx.gl.uniformMatrix4fv(cameraMatrixLoc, false, perspective);
-
-    // Bind vertex buffer object
-    ctx.gl.bindBuffer(ctx.gl.ARRAY_BUFFER, vertex_buffer);
 
     // Get the attribute location
     const coord = ctx.gl.getAttribLocation(ctx.program, "vertex_coord");
@@ -172,13 +140,41 @@ export function render(ctx) {
     ctx.gl.viewport(0, 0, ctx.gl.drawingBufferWidth, ctx.gl.drawingBufferHeight);
 
     // Draw the triangle
-    ctx.gl.drawArrays(ctx.gl.POINTS, 0, vSize);
+    ctx.gl.drawArrays(ctx.gl.POINTS, 0, ctx.vSize);
+
+    // Unbind the buffer
+    ctx.gl.bindBuffer(ctx.gl.ARRAY_BUFFER, null);
+
+    ctx.gl.deleteBuffer(vertex_buffer);
 
     ctx.gl.useProgram(null);
     if (ctx.buffer) {
         ctx.gl.deleteBuffer(ctx.buffer);
     }
+
     if (ctx.program) {
         ctx.gl.deleteProgram(ctx.program);
     }
+
+    ctx.gl.flush();
 }
+
+function fillVertices(ctx) {
+    if (ctx.hasBeenFilled) {
+        return ctx.vertices;
+    }
+    ctx.hasBeenFilled = true;
+    const { $showToast } = useNuxtApp();
+    $showToast("test", "info", 5000);
+    const vSizeFixed = ctx.vSize/3;
+    const delta = 1.0 / vSizeFixed;
+    for (let i = 0; i < vSizeFixed; i++) {
+        let sign = 1.0;
+        if (i % 2 == 1) {
+            sign = -1.0;
+        }
+        ctx.vertices[3*i + 0] = delta * i;
+        ctx.vertices[3*i + 1] = delta * i;
+        ctx.vertices[3*i + 2] = sign;
+    }
+} 

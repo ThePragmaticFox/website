@@ -3,15 +3,19 @@
     Your browser does not seem to support HTML5 canvas.
   </canvas>
   <div class="format-div-fps">
-    fps: {{ (1.0 / context.deltaMean).toFixed(0) }}
+    FPS: {{ (1.0 / context.deltaMean).toFixed(0) }}
+  </div>
+    <div class="format-div-title">
+    Particle Optimization
   </div>
 </template>
 
 <script setup lang="ts">
-const { $render } = useNuxtApp();
+const { $render_particle_optimization } = useNuxtApp();
 </script>
 
 <script lang="ts">
+const vSize = 3*10000000;
 export default {
   data() {
     return {
@@ -29,9 +33,9 @@ export default {
         deltaMean: 1.0,
         deltaArr: [],
         deltaSize: 1000,
-        verticesArr: [],
-        verticesSize: 100000,
-        isVerticesArrInitiated: false
+        vSize: vSize,
+        vertices: new Float32Array(vSize),
+        hasBeenFilled: false
       },
     };
   },
@@ -51,13 +55,13 @@ export default {
   methods: {
     renderLoop() {
       setTimeout(this.renderLoop, 1000 / 60);
-      this.$render(this.context);
+      this.$render_particle_optimization(this.context);
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 * {
   box-sizing: border-box;
 }
@@ -82,9 +86,19 @@ body {
   z-index: -1;
 }
 
+.format-div-title {
+  position: absolute;
+  left: 3%;
+  top: 5%;
+  font-size: 2vw;
+  z-index: 100;
+  color: white;
+}
+
 .format-div-fps {
-  left: 0;
-  top: 0;
+  position: absolute;
+  left: 3%;
+  top: 10%;
   font-size: 2vw;
   z-index: 100;
   color: white;
