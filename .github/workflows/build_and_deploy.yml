@@ -20,6 +20,6 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
           ssh root@${{ secrets.SERVER_IP }} "rm -rf website"
-          ssh root@${{ secrets.SERVER_IP }} "git clone ${{ TO_CLONE }}"
+          ssh root@${{ secrets.SERVER_IP }} "git clone ${{ secrets.TO_CLONE }}"
           ssh root@${{ secrets.SERVER_IP }} "cd website && npm i && npm run build"
-          ssh root@${{ secrets.SERVER_IP }} "cd website && export HOST=${{ HOST }} && export PORT=${{ PORT }} && npm run start"
+          ssh root@${{ secrets.SERVER_IP }} "cd website && export HOST=${{ secrets.HOST }} && export PORT=${{ secrets.PORT }} && npm run start"
