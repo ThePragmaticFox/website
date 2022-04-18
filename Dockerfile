@@ -1,43 +1,11 @@
-FROM ubuntu:20.04
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get -y install build-essential
-RUN apt-get -y install curl
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
-RUN apt-get -y install nodejs
-
-ENV DEBIAN_FRONTEND=dialog
+FROM node:17-alpine3.14
 
 RUN mkdir -p /website
-WORKDIR /website
+COPY .output/ /website/
 
-COPY assets ./assets
-COPY components ./components
-COPY layouts ./layouts
-COPY middleware ./middleware
-COPY pages ./pages
-COPY plugins ./plugins
-COPY nuxt.config.ts .
-COPY tsconfig.json .
-COPY package.json .
+ENV HOST=0.0.0.0
+ENV PORT=3000
 
-RUN npm i && npm cache clean --force
-RUN npm run build
+EXPOSE 3000
 
-RUN rm -rf assets
-RUN rm -rf components
-RUN rm -rf layouts
-RUN rm -rf middleware
-RUN rm -rf pages
-RUN rm -rf plugins
-RUN rm -rf nuxt.config.ts
-RUN rm -rf tsconfig.json
-
-ENV NUXT_HOST=0.0.0.0
-ENV NUXT_PORT=3000
-
-EXPOSE 3000 
-
-ENTRYPOINT ["npm", "run", "start"]
+CMD [ "node", "/website/server/index.mjs" ]

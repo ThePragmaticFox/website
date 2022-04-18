@@ -5,9 +5,7 @@
   <div class="format-div-fps">
     FPS: {{ (1.0 / context.deltaMean).toFixed(0) }}
   </div>
-    <div class="format-div-title">
-    Particle Optimization
-  </div>
+  <div class="format-div-title">Particle Optimization</div>
 </template>
 
 <script setup lang="ts">
@@ -15,7 +13,7 @@ const { $render_particle_optimization } = useNuxtApp();
 </script>
 
 <script lang="ts">
-const vSize = 3*1000000;
+const vSize = 3 * 500000;
 export default {
   data() {
     return {
@@ -35,7 +33,7 @@ export default {
         deltaSize: 1000,
         vSize: vSize,
         vertices: new Float32Array(vSize),
-        hasBeenFilled: false
+        hasBeenFilled: false,
       },
     };
   },

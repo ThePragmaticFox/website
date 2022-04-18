@@ -35,8 +35,8 @@ function getSourceSynch(url) {
 };
 
 function resizeCanvasToDisplaySize(ctx) {
-    ctx.gl.canvas.width = ctx.gl.canvas.clientWidth;
-    ctx.gl.canvas.height = ctx.gl.canvas.clientHeight;
+    ctx.gl.canvas.width = Math.min(1920, ctx.gl.canvas.clientWidth);
+    ctx.gl.canvas.height = Math.min(1080, ctx.gl.canvas.clientHeight);
 }
 
 export function render_particle_optimization(ctx) {

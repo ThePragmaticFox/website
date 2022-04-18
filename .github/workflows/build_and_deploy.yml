@@ -7,7 +7,68 @@ on:
 
 jobs:
 
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v3
+      - 
+        name: Compile Website
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.14.2'
+          context: ./
+      - run: npm i
+      - run: npm run build
+      - 
+        uses: actions/upload-artifact@v3
+        with:
+          name: output
+          path: .output
+          
+  build2:
+  
+    needs: build
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+        - 
+          name: Checkout
+          uses: actions/checkout@v3
+        -
+          uses: actions/download-artifact@v3
+          with:
+            name: output
+            path: .output
+        -
+          name: Login to Docker Hub
+          uses: docker/login-action@v1
+          with:
+            username: ${{ secrets.DOCKER_HUB_USERNAME }}
+            password: ${{ secrets.DOCKER_HUB_TOKEN }}
+        -
+          name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v1
+        - run: ls
+        -
+          name: Build and push
+          uses: docker/build-push-action@v2
+          with:
+            context: ./
+            file: ./Dockerfile
+            builder: ${{ steps.buildx.outputs.name }}
+            push: true
+            tags: ${{ secrets.DOCKER_HUB_USERNAME }}/website:latest
+            cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/website:buildcache
+            cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/website:buildcache,mode=max
+
   deploy:
+
+    needs: build2
 
     runs-on: ubuntu-latest
 
@@ -19,7 +80,11 @@ jobs:
           ssh-add - <<< "${{ secrets.SERVER_DEPLOY }}"
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-          ssh root@${{ secrets.SERVER_IP }} "rm -rf website"
-          ssh root@${{ secrets.SERVER_IP }} "git clone ${{ secrets.TO_CLONE }}"
-          ssh root@${{ secrets.SERVER_IP }} "cd website && npm i && npm run build"
-          ssh root@${{ secrets.SERVER_IP }} "cd website && export HOST=${{ secrets.HOST }} && export PORT=${{ secrets.PORT }} && npm run start"
+          if [ $(ssh root@${{ secrets.SERVER_IP }} "docker ps -q -f name=website") ]; then
+              ssh root@${{ secrets.SERVER_IP }} "docker kill website"
+              ssh root@${{ secrets.SERVER_IP }} "docker rm website"
+          fi
+          ssh root@${{ secrets.SERVER_IP }} "docker container prune --force"
+          ssh root@${{ secrets.SERVER_IP }} "docker image prune --force --all"
+          ssh root@${{ secrets.SERVER_IP }} "docker pull pragmaticfox/website:latest"
+          ssh root@${{ secrets.SERVER_IP }} "docker run -d -p 80:3000 --name website pragmaticfox/website:latest"
