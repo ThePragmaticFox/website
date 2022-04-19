@@ -1,11 +1,13 @@
 <template>
-  <canvas class="format-canvas-rendering" id="glCanvas">
-    Your browser does not seem to support HTML5 canvas.
-  </canvas>
-  <div class="format-div-fps">
-    FPS: {{ (1.0 / context.deltaMean).toFixed(0) }}
+  <div>
+    <canvas class="format-canvas-rendering" id="glCanvas">
+      Your browser does not seem to support HTML5 canvas.
+    </canvas>
+    <div class="format-div-fps">
+      FPS: {{ (1.0 / context.deltaMean).toFixed(0) }}
+    </div>
+    <div class="format-div-title">Particle Optimization</div>
   </div>
-  <div class="format-div-title">Particle Optimization</div>
 </template>
 
 <script setup lang="ts">
@@ -13,7 +15,7 @@ const { $render_particle_optimization } = useNuxtApp();
 </script>
 
 <script lang="ts">
-const vSize = 3 * 500000;
+const vSize = 500000;
 export default {
   data() {
     return {
@@ -32,7 +34,7 @@ export default {
         deltaArr: [],
         deltaSize: 1000,
         vSize: vSize,
-        vertices: new Float32Array(vSize),
+        vertices: new Float32Array(3 * vSize),
         hasBeenFilled: false,
       },
     };
