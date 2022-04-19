@@ -15,7 +15,7 @@ const { $render_particle_optimization } = useNuxtApp();
 </script>
 
 <script lang="ts">
-const vSize = 500000;
+const vSize = 50000;
 export default {
   data() {
     return {
