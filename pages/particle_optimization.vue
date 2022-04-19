@@ -6,6 +6,18 @@
     <div class="format-div-fps">
       FPS: {{ (1.0 / context.deltaMean).toFixed(0) }}
     </div>
+    <div class="format-div-slider">
+      #particles: {{ context.vSize }}<br />
+      <input
+        type="range"
+        value="3"
+        min="0"
+        max="6"
+        class="format-input-type-slider"
+        id="particle_slider"
+        list="particle_slider_tickmarks"
+      />
+    </div>
     <div class="format-div-title">Particle Optimization</div>
   </div>
 </template>
@@ -55,6 +67,10 @@ export default {
   methods: {
     renderLoop() {
       setTimeout(this.renderLoop, 1000 / 60);
+      this.context.vSize = Math.pow(
+        10,
+        document.getElementById("particle_slider").value
+      );
       this.$render_particle_optimization(this.context);
     },
   },
@@ -102,5 +118,36 @@ body {
   font-size: 2vw;
   z-index: 100;
   color: white;
+}
+
+.format-div-slider {
+  position: absolute;
+  left: 3%;
+  bottom: 5%;
+  font-size: 1vw;
+  z-index: 100;
+  color: white;
+}
+
+.format-input-type-slider {
+  position: fixed;
+  left: 3%;
+  bottom: 3%;
+}
+
+.format-input-type-slider:hover {
+  opacity: 1;
+}
+
+.format-input-type-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  background: #04aa6d; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.format-input-type-slider::-moz-range-thumb {
+  background: #04aa6d; /* Green background */
+  cursor: pointer; /* Cursor on hover */
 }
 </style>

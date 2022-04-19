@@ -164,12 +164,14 @@ export async function render_particle_optimization(ctx) {
 }
 
 function fillVertices(ctx) {
+  if (3 * ctx.vSize != ctx.vertices.length) {
+    ctx.vertices = new Float32Array(3*ctx.vSize);
+    ctx.hasBeenFilled = false;
+  }
   if (ctx.hasBeenFilled) {
     return;
   }
   ctx.hasBeenFilled = true;
-  const { $showToast } = useNuxtApp();
-  $showToast("test", "info", 5000);
   const vSizeFixed = ctx.vertices.length / 3;
   const delta = 1.0 / vSizeFixed;
   for (let i = 0; i < vSizeFixed; i++) {
