@@ -87,4 +87,4 @@ jobs:
           ssh root@${{ secrets.SERVER_IP }} "docker container prune --force"
           ssh root@${{ secrets.SERVER_IP }} "docker image prune --force --all"
           ssh root@${{ secrets.SERVER_IP }} "docker pull pragmaticfox/website:latest"
-          ssh root@${{ secrets.SERVER_IP }} "docker run -d --network=${{ secrets.NETWORK }} --name website pragmaticfox/website:latest"
+          ssh root@${{ secrets.SERVER_IP }} "docker run -d --network ${{ secrets.NETWORK }} --name website pragmaticfox/website:latest"
