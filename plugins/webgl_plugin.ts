@@ -1,9 +1,13 @@
-import { render_particle_optimization } from "./webgl/particle_optimization.ts";
+import * as Po from "./webgl/particle_optimization";
 
 export default defineNuxtPlugin(() => {
     return {
         provide: {
-            render_particle_optimization: render_particle_optimization
+            Po: {
+                create: Po.create,
+                render: Po.render,
+                destroy: Po.destroy
+            }
         }
     }
 })
