@@ -39,7 +39,7 @@ export default {
         now_ms: 0.0,
         deltaMean: 1.0,
         deltaArr: [],
-        deltaSize: 100,
+        deltaSize: 1000,
         vSize: vSize,
         vertices: new Float32Array(3 * vSize),
         hasBeenFilled: false,

@@ -26,6 +26,6 @@ export function udpateDelta(ctx) {
 }
 
 export function resizeCanvasToDisplaySize(gl) {
-  gl.canvas.width = Math.min(1920, gl.canvas.clientWidth);
-  gl.canvas.height = Math.min(1080, gl.canvas.clientHeight);
+  gl.canvas.width = Math.max(1280, Math.min(3840, gl.canvas.clientWidth));
+  gl.canvas.height = Math.max(720, Math.min(2160, gl.canvas.clientHeight));
 }
