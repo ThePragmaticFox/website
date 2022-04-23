@@ -2,14 +2,19 @@ import * as M4 from "./m4";
 import * as Mu from "./mu";
 import * as Wgl from "./wgl";
 
-const pName = "particle_optimization";
-const pVSrcFile = "/shaders/" + pName + ".vert";
-const pFSrcFile = "/shaders/" + pName + ".frag";
-const programMap = new Map();
-var vertex_buffer = null;
+const pName: String = "particle_optimization";
+const pVSrcFile: String = "/shaders/" + pName + ".vert";
+const pFSrcFile: String = "/shaders/" + pName + ".frag";
+const programMap: Map<String, WebGLProgram | null> = new Map();
+var VBO: null | WebGLBuffer;
 
-export async function create(gl) {
-  const program = await Wgl.createProgram(gl, pName, pVSrcFile, pFSrcFile);
+export async function create(gl: WebGL2RenderingContext): Promise<Boolean> {
+  const program = await Wgl.createProgram(
+    gl,
+    pName,
+    <RequestInfo>pVSrcFile,
+    <RequestInfo>pFSrcFile
+  );
   programMap.set(pName, program);
   if (program == undefined || program == null) {
     return false;
@@ -17,7 +22,7 @@ export async function create(gl) {
   return true;
 }
 
-export function destroy(gl) {
+export function destroy(gl: WebGL2RenderingContext) {
   const program = programMap.get(pName);
   if (program == undefined || program == null) {
     return;
@@ -26,7 +31,7 @@ export function destroy(gl) {
   Wgl.deleteShader(gl, program, pFSrcFile);
 }
 
-function fillVertices(ctx) {
+function fillVertices(ctx: any) {
   if (3 * ctx.vSize != ctx.vertices.length) {
     ctx.vertices = new Float32Array(3 * ctx.vSize);
     ctx.hasBeenFilled = false;
@@ -48,8 +53,10 @@ function fillVertices(ctx) {
   }
 }
 
-
-export async function render(gl, ctx) {
+export async function render(
+  gl: WebGL2RenderingContext,
+  ctx: any
+): Promise<Boolean> {
   const program = programMap.get(pName);
   if (program == undefined || program == null) {
     return false;
@@ -74,7 +81,7 @@ export async function render(gl, ctx) {
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
   const near = 1.0;
   const far = 1000.0;
-  var perspective = M4.getPerspectiveDeg(fovDeg, aspect, near, far);
+  var perspective: M4.mat4fv = M4.getPerspectiveDeg(fovDeg, aspect, near, far);
   perspective = M4.translate(
     perspective,
     translation[0],
@@ -86,9 +93,9 @@ export async function render(gl, ctx) {
   perspective = M4.rotateZDeg(perspective, rotation[2]);
   perspective = M4.scale(perspective, scale[0], scale[1], scale[2]);
 
-  if (!hasBeenFilled || vertex_buffer == undefined || vertex_buffer == null) {
-    vertex_buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+  if (!hasBeenFilled || VBO == undefined || VBO == null) {
+    VBO = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
     gl.bufferData(gl.ARRAY_BUFFER, ctx.vertices, gl.STREAM_DRAW);
   }
 
@@ -107,6 +114,5 @@ export async function render(gl, ctx) {
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
   gl.drawArrays(gl.POINTS, 0, ctx.vSize);
-  //gl.deleteBuffer(vertex_buffer);
   return true;
 }

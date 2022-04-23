@@ -4,23 +4,28 @@ const shaderMap = new Map();
 const shaderSourceMap = new Map();
 const programMap = new Map();
 
-export function getShader(shaderSource) {
+export function getShader(shaderSource: String): String {
   return shaderMap.get(shaderSource);
 }
 
-export function getProgram(name) {
+export function getProgram(name: String): WebGLProgram {
   return programMap.get(name);
 }
 
-export async function createShader(gl, program, srcFile, shaderType) {
+export async function createShader(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  srcFile: RequestInfo,
+  shaderType: GLenum
+): Promise<WebGLShader> {
   var shader = shaderMap.get(srcFile);
   if (shader != undefined && shader != null) {
     return shader;
   }
   shader = gl.createShader(shaderType);
-  var src = shaderSourceMap.get(srcFile);
-  while (src == undefined || src == null) {
-    src = await help.getSourceSynch(srcFile);
+  let src: string = shaderSourceMap.get(srcFile);
+  while (src == undefined || src == null || src == "null") {
+    src = <string> await help.getSourceSynch(srcFile);
   }
   gl.shaderSource(shader, src);
   gl.compileShader(shader);
@@ -30,7 +35,11 @@ export async function createShader(gl, program, srcFile, shaderType) {
   return shader;
 }
 
-export function deleteShader(gl, program, srcFile) {
+export function deleteShader(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  srcFile: String
+) {
   const shader = shaderMap.get(srcFile);
   if (shader != undefined && shader != null) {
     gl.detachShader(program, shader);
@@ -39,14 +48,19 @@ export function deleteShader(gl, program, srcFile) {
   }
 }
 
-export async function createProgram(gl, name, vSrcFile, fSrcFile) {
+export async function createProgram(
+  gl: WebGL2RenderingContext,
+  name: String,
+  vSrcFile: RequestInfo,
+  fSrcFile: RequestInfo
+): Promise<null | WebGLProgram> {
   var program = programMap.get(name);
   if (program == undefined || program == null) {
     program = gl.createProgram();
   }
   programMap.set(name, program);
-  await this.createShader(gl, program, vSrcFile, gl.VERTEX_SHADER);
-  await this.createShader(gl, program, fSrcFile, gl.FRAGMENT_SHADER);
+  await createShader(gl, program, vSrcFile, gl.VERTEX_SHADER);
+  await createShader(gl, program, fSrcFile, gl.FRAGMENT_SHADER);
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     const linkErrLog = gl.getProgramInfoLog(program);
@@ -58,7 +72,12 @@ export async function createProgram(gl, name, vSrcFile, fSrcFile) {
   return program;
 }
 
-export async function closeProgram(gl, program, vSrcFile, fSrcFile) {
-  this.deleteShader(gl, program, vSrcFile);
-  this.deleteShader(gl, program, fSrcFile);
+export function closeProgram(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  vSrcFile: String,
+  fSrcFile: String
+) {
+  deleteShader(gl, program, vSrcFile);
+  deleteShader(gl, program, fSrcFile);
 }

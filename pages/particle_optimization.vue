@@ -31,45 +31,44 @@ const vSize = 50000;
 export default {
   data() {
     return {
-      isOk: true,
-      gl: null,
-      context: {
-        timeAnchor_ms: Date.now(),
-        then_ms: 0.0,
-        now_ms: 0.0,
-        deltaMean: 1.0,
-        deltaArr: [],
-        deltaSize: 1000,
-        vSize: vSize,
+      gl: <any> null,
+      context: <any>{
+        timeAnchor_ms: <number>Date.now(),
+        then_ms: <number>0.0,
+        now_ms: <number>0.0,
+        deltaMean: <number>1.0,
+        deltaArr: <Array<number>>[],
+        deltaSize: <number>1000,
+        vSize: <number>vSize,
         vertices: new Float32Array(3 * vSize),
-        hasBeenFilled: false,
+        hasBeenFilled: <Boolean>false,
       },
     };
   },
-  mounted() {
+  async mounted() {
     const canvas = document.querySelector("#glCanvas");
-    if (canvas instanceof HTMLCanvasElement) {
-      this.gl = canvas.getContext("webgl2");
+    if (!(canvas instanceof HTMLCanvasElement)) {
+      return;
     }
-    if (!this.gl) {
+    const gl: null | WebGL2RenderingContext = canvas.getContext("webgl2");
+    if (gl == null || !gl) {
       alert(
         "Failed to get WebGL context. Your browser or device may not support WebGL."
       );
       return;
     }
-    this.$Po.create(this.gl).then((isOk) => {
-      if (!isOk) {
-        return;
-      }
-      this.renderLoop();
-      this.$Po.destroy(this.gl);
-    });
+    this.gl = gl;
+    await this.$Po.create(gl);
+    this.renderLoop();
+    await this.$Po.destroy(gl);
   },
   methods: {
-    renderLoop() {
-      const timer = setTimeout(this.renderLoop, 1000/120);
-      const particleSliderDOM = document.getElementById("particle_slider");
-      this.context.vSize = Math.pow(10, particleSliderDOM.value);
+    async renderLoop() {
+      const timer = setTimeout(this.renderLoop, 1000 / 120);
+      const particleSliderDOM: HTMLInputElement = <HTMLInputElement>(
+        document.getElementById("particle_slider")
+      );
+      this.context.vSize = Math.pow(10, Number(particleSliderDOM.value));
       this.$Po.render(this.gl, this.context).then((isOk) => {
         if (!isOk) {
           clearTimeout(timer);

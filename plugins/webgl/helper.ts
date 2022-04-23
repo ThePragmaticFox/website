@@ -1,4 +1,4 @@
-export async function getSourceSynch(url) {
+export async function getSourceSynch(url: RequestInfo): Promise<String> {
   const { data } = await useFetch(url);
-  return data.value;
+  return String(data.value);
 }
