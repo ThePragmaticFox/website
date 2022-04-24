@@ -5,4 +5,7 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+  configureWebpack: {
+    devtool: "source-map",
+  },
 });
