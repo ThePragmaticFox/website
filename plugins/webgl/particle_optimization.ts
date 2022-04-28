@@ -84,12 +84,12 @@ export async function render(
   const cameraMatrixLoc = gl.getUniformLocation(program, "u_camera");
 
   document.addEventListener("keydown", (event) => {
-    const moveVelocity = 0.00001;
+    const moveVelocity = 0.0001;
     if (event.key === "w") {
-      translation[1] -= moveVelocity;
+      translation[2] += moveVelocity;
     }
     if (event.key === "s") {
-      translation[1] += moveVelocity;
+      translation[2] -= moveVelocity;
     }
     if (event.key === "a") {
       translation[0] += moveVelocity;
@@ -100,7 +100,7 @@ export async function render(
   });
 
   document.addEventListener("wheel", (event) => {
-    translation[2] = Math.max(0.1, translation[2] + 0.0000001 * event.deltaX);
+    scale[2] = Math.max(0.1, scale[2] + 0.0000001 * event.deltaX);
   });
 
   document.addEventListener("mousemove", (event) => {
