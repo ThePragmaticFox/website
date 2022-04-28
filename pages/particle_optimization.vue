@@ -22,6 +22,10 @@
   </div>
 </template>
 
+<style scoped>
+@import "~/assets/css/particle_optimization.scss";
+</style>
+
 <script setup lang="ts">
 const { $Po } = useNuxtApp();
 </script>
@@ -31,7 +35,7 @@ const vSize = 50000;
 export default {
   data() {
     return {
-      gl: <any> null,
+      gl: <any>null,
       context: <any>{
         timeAnchor_ms: <number>Date.now(),
         then_ms: <number>0.0,
@@ -78,78 +82,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  height: 100vh;
-  width: 100vw;
-}
-
-.format-canvas-rendering {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-}
-
-.format-div-title {
-  position: absolute;
-  left: 3%;
-  top: 5%;
-  font-size: 2vw;
-  z-index: 100;
-  color: white;
-}
-
-.format-div-fps {
-  position: absolute;
-  left: 3%;
-  top: 10%;
-  font-size: 2vw;
-  z-index: 100;
-  color: white;
-}
-
-.format-div-slider {
-  position: absolute;
-  left: 3%;
-  bottom: 5%;
-  font-size: 1vw;
-  z-index: 100;
-  color: white;
-}
-
-.format-input-type-slider {
-  position: fixed;
-  left: 3%;
-  bottom: 3%;
-}
-
-.format-input-type-slider:hover {
-  opacity: 1;
-}
-
-.format-input-type-slider::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Override default look */
-  appearance: none;
-  background: #04aa6d; /* Green background */
-  cursor: pointer; /* Cursor on hover */
-}
-
-.format-input-type-slider::-moz-range-thumb {
-  background: #04aa6d; /* Green background */
-  cursor: pointer; /* Cursor on hover */
-}
-</style>

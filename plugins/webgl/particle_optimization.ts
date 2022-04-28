@@ -8,6 +8,16 @@ const pFSrcFile: String = "/shaders/" + pName + ".frag";
 const programMap: Map<String, WebGLProgram | null> = new Map();
 var VBO: null | WebGLBuffer;
 
+const translation = [0.0, 0.0, -20.0];
+const rotation = [0.0, 0.0, 0.0];
+const scale = [1.0, 1.0, 1.0];
+const camera = {
+  fovDeg: 60.0,
+  aspect: 1.777,
+  near: 1.0,
+  far: 1000.0,
+};
+
 export async function create(gl: WebGL2RenderingContext): Promise<Boolean> {
   const program = await Wgl.createProgram(
     gl,
@@ -73,15 +83,41 @@ export async function render(
   const deltaLoc = gl.getUniformLocation(program, "u_delta");
   const cameraMatrixLoc = gl.getUniformLocation(program, "u_camera");
 
-  const translation = [0.0, 0.0, -20.0];
-  const rotation = [0.0, 0.0, 0.0];
-  const scale = [1.0, 1.0, 1.0];
+  document.addEventListener("keydown", (event) => {
+    const moveVelocity = 0.00001;
+    if (event.key === "w") {
+      translation[1] -= moveVelocity;
+    }
+    if (event.key === "s") {
+      translation[1] += moveVelocity;
+    }
+    if (event.key === "a") {
+      translation[0] += moveVelocity;
+    }
+    if (event.key === "d") {
+      translation[0] -= moveVelocity;
+    }
+  });
 
-  const fovDeg = 5.0;
-  const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-  const near = 1.0;
-  const far = 1000.0;
-  var perspective: M4.mat4fv = M4.getPerspectiveDeg(fovDeg, aspect, near, far);
+  document.addEventListener("wheel", (event) => {
+    translation[2] = Math.max(0.1, translation[2] + 0.0000001 * event.deltaX);
+  });
+
+  document.addEventListener("mousemove", (event) => {
+    event.preventDefault();
+    if (event.button == 1 || event.buttons == 1 || event.type == 'click') {
+      rotation[0] += 0.0001 * event.movementY;
+      rotation[1] += 0.0001 * event.movementX;
+    }
+  });
+
+  camera.aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+  var perspective: M4.mat4fv = M4.getPerspectiveDeg(
+    camera.fovDeg,
+    camera.aspect,
+    camera.near,
+    camera.far
+  );
   perspective = M4.translate(
     perspective,
     translation[0],

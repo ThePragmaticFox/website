@@ -8,4 +8,9 @@ export default defineNuxtConfig({
   configureWebpack: {
     devtool: "source-map",
   },
+  head: {
+    css: [
+      '~/assets/css/particle_optimization.scss'
+    ]
+  }
 });
